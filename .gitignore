@@ -16,3 +16,4 @@
 
 *.pb.go
 .idea/*
+ec_deployer

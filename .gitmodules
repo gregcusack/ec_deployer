@@ -1,3 +1,0 @@
-[submodule "Agent/jsonSDK"]
-	path = Agent/jsonSDK
-	url = git@github.com:PreritO/jsonSDK.git
