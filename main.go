@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"github.com/gregcusack/ec_deployer/structs"
+	"github.com/Maziyar-Na/EC-Agent/msg"
 )
 
 
@@ -45,7 +46,7 @@ func main() {
 	byteVal, _ := ioutil.ReadAll(jsonFile)
 
 	//var dcDefs DcDefs
-	var dcDefs DeploymentDefinition
+	var dcDefs structs.DeploymentDefinition
 
 	//json.Unmarshal(byteVal, &dcDefs)
 	json.Unmarshal(byteVal, &dcDefs)
