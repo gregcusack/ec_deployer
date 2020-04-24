@@ -1,0 +1,27 @@
+{
+    "DC-def": [
+    {
+        "name": "app1",
+        "specs": {
+                "mem": 300,
+                "cpu": 500,
+                "ports": 80,
+                "net": 10
+        },
+        "gcmIP": "10.0.2.15",
+        "agentIPs": [
+            "10.0.2.15"
+        ],
+        "images": [
+            "gregcusack/flask-app:absat-1",
+            "gregcusack/flask-app:absat-2"
+        ],
+        "pod-names": [
+            "f-1",
+            "f-2"
+        ],
+        "yaml_path" : [
+            "k8-yaml/"
+        ]
+    }]
+}
