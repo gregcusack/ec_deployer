@@ -1,0 +1,25 @@
+syntax = "proto3";
+option go_package = ".;ec_rpc";
+
+package ec_rpc;
+
+// The greeting service definition.
+service DeployerExport {
+  // Sends a greeting
+  rpc ReportPodSpec (ExportPodSpec) returns (PodSpecReply) {}
+}
+
+// The request message containing the user's name.
+message ExportPodSpec {
+  string docker_id = 1;
+  int32 cgroup_id = 2;
+  string node_ip = 3;
+}
+
+// The response message containing the greetings
+message PodSpecReply {
+  string docker_id = 1;
+  int32 cgroup_id = 2;
+  string node_ip = 3;
+  string thanks = 4;
+}
