@@ -13,8 +13,8 @@ github.com/Azure/go-autorest/autorest/mocks v0.3.0/go.mod h1:a8FDP3DYzQ4RYfVAxAN
 github.com/Azure/go-autorest/logger v0.1.0/go.mod h1:oExouG+K6PryycPJfVSxi/koC6LSNgds39diKLz7Vrc=
 github.com/Azure/go-autorest/tracing v0.5.0/go.mod h1:r/s2XiOKccPW3HrqB+W0TQzfbtp2fGCgRFtBroKn4Dk=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/Maziyar-Na/EC-Agent v0.0.0-20200428155706-d1500a5f936e h1:9FA3hB0KHsK0kJjJwxiw4r9MlTaIbh6p7edl+lE/gCo=
-github.com/Maziyar-Na/EC-Agent v0.0.0-20200428155706-d1500a5f936e/go.mod h1:m5/SeyE+Q6zK8OJFcEjAEtd4/cVJqK6TFdKmTIXfJ1Y=
+github.com/Maziyar-Na/EC-Agent v0.0.0-20200501204013-14ebd596ab35 h1:ab5tGjhmG5sUg9TjHAh5RgSSKfeatdKnLlJ4l7CpY58=
+github.com/Maziyar-Na/EC-Agent v0.0.0-20200501204013-14ebd596ab35/go.mod h1:m5/SeyE+Q6zK8OJFcEjAEtd4/cVJqK6TFdKmTIXfJ1Y=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
@@ -72,9 +72,6 @@ github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gnostic v0.4.1 h1:DLJCy1n/vrD4HPjOvYcT8aYQXpPIzoRZONaYwyycI+I=
 github.com/googleapis/gnostic v0.4.1/go.mod h1:LRhVm6pbyptWbWbuZ38d1eyptfvIytN3ir6b65WBswg=
-github.com/gregcusack/ec_gcm v0.0.0-20200430161402-f8e4169315bf h1:wBDYQn4zkGb2X9l+3VSINxdnt7FM5z7svsufYE5kwGE=
-github.com/gregcusack/ec_gcm/DeployServerGRPC v0.0.0-20200430161402-f8e4169315bf h1:eTfF7CCDZpbD7jBGeK5+5t0ilvdo0qOWTcQFOyxM5mQ=
-github.com/gregcusack/ec_gcm/DeployServerGRPC v0.0.0-20200430161402-f8e4169315bf/go.mod h1:0QNRxZ1Sb/thiL+SsOPdRXyNgJf3A+s3gwBfvKCO+Xo=
 github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7/go.mod h1:FecbI9+v66THATjSRHfNgh1IVFe/9kFxbXtjV0ctIMA=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=

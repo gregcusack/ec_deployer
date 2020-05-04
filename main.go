@@ -24,7 +24,7 @@ import (
 	"time"
 )
 
-const AGENT_PORT = ":4445"
+const AGENT_GRPC_PORT = ":4446"
 const GCM_GRPC_PORT = ":4447"
 const BUFFSIZE = 2048
 
@@ -47,10 +47,14 @@ func main() {
 	//var dcDefs DcDefs
 	var dcDefs structs.DeploymentDefinition
 
-	json.Unmarshal(byteVal, &dcDefs)
+	err = json.Unmarshal(byteVal, &dcDefs)
+	if err != nil {
+		log.Println("Error reading json file: " + err.Error())
+	}
 
 	clientset := configK8()
 	podClient := clientset.CoreV1().Pods(apiv1.NamespaceDefault)
+	//fmt.Println(byteVal)
 
 	//Generate Pod Defs and Deploy Pods
 	for i := 0; i < len(dcDefs.DCDefs[0].PodNames); i++ {
@@ -67,8 +71,8 @@ func main() {
 
 		nodeObj,_ := clientset.CoreV1().Nodes().Get(context.TODO(), podObj.Spec.NodeName, metav1.GetOptions{})
 		fmt.Println(nodeObj.Status.Addresses)
-		nodeIP := nodeObj.Status.Addresses[0].Address
-		fmt.Println("Node Name: " + podObj.Spec.NodeName + ", Node ip: " + nodeIP)
+		//nodeIP := nodeObj.Status.Addresses[0].Address
+		//fmt.Println("Node Name: " + podObj.Spec.NodeName + ", Node ip: " + nodeIP)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -89,14 +93,17 @@ func main() {
 		//fmt.Println(podObj.Status.ContainerStatuses[0].ContainerID)
 
 		//getPodInfoFromAgent(nodeIP, podObj.Name)
-		//getPodInfoFromAgentGrpc(nodeIP, podObj.Name)
-		fmt.Println(nodeIP)
-		exportDeployPodSpec(nodeIP)
+		nodeIP := nodeObj.Status.Addresses[0].Address
 
+		fmt.Println(nodeIP)
+		//dockerID := podObj.Status.ContainerStatuses[0].ContainerID[9:]
+
+		cgId, dockerID := connectContainerRequest(nodeIP, podObj.Name)
+		exportDeployPodSpec(nodeIP, dockerID, cgId)
 
 		//TODO: get cgroup ID from pod
 
-		break
+		//break
 
 	}
 
@@ -108,7 +115,7 @@ func main() {
 }
 //
 //TODO: json file should have port
-func exportDeployPodSpec(gcmIP string) {
+func exportDeployPodSpec(gcmIP string, dockerID string, cgroupId int32) {
 	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -117,9 +124,9 @@ func exportDeployPodSpec(gcmIP string) {
 	c := dgrpc.NewDeployerExportClient(conn)
 
 	txMsg := &dgrpc.ExportPodSpec{
-		DockerId: "this-be-docker",
-		CgroupId: 23,
-		NodeIp: "66.55.44.33",
+		DockerId: dockerID,
+		CgroupId: cgroupId,
+		NodeIp: gcmIP,
 	}
 
 	fmt.Println(txMsg)
@@ -136,8 +143,8 @@ func exportDeployPodSpec(gcmIP string) {
 }
 
 
-func getPodInfoFromAgentGrpc(agentIP, podName string) {
-	conn, err := grpc.Dial(agentIP + AGENT_PORT, grpc.WithInsecure(), grpc.WithBlock())
+func connectContainerRequest(agentIP, podName string) (int32, string) {
+	conn, err := grpc.Dial(agentIP + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -148,14 +155,16 @@ func getPodInfoFromAgentGrpc(agentIP, podName string) {
 		GcmIP: agentIP,
 		PodName: podName,
 	}
+	fmt.Println(txMsg)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	r, err := c.ReqConnectContainer(ctx,txMsg)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Println("Rx back: ", r.GetPodName(), r.GetDockerID(), r.GetCgroupID())
+	return r.GetCgroupID(), r.GetDockerID()
 
 }
 

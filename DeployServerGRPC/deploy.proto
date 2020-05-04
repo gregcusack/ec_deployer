@@ -1,7 +1,7 @@
 syntax = "proto3";
-option go_package = ".;ec_rpc";
+option go_package = ".;ec.rpc";
 
-package ec_rpc;
+package ec.rpc;
 
 // The greeting service definition.
 service DeployerExport {
