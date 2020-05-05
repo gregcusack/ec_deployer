@@ -151,6 +151,7 @@ func connectContainerRequest(agentIP, podName string) (int32, string) {
 	defer conn.Close()
 	c := pb.NewHandlerClient(conn)
 
+	//TODO: agentIP needs to be GcmIP
 	txMsg := &pb.ConnectContainerRequest{
 		GcmIP: agentIP,
 		PodName: podName,
