@@ -143,7 +143,7 @@ func CreateQueue() workqueue.RateLimitingInterface {
 
 func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingInterface, gcmIP string, agentIPs []string) *Controller {
 	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
-	// whenever the cache is updated, the pod key is added to the workqueue.
+	// whenever the cache is updated, the pod key is added sto the workqueue.
 	// Note that when we finally process the item from the workqueue, we might see a newer version
 	// of the Pod than the version which was responsible for triggering the update.
 	indexer, informer := cache.NewIndexerInformer(podListWatcher, &corev1.Pod{}, 0, cache.ResourceEventHandlerFuncs{
@@ -174,7 +174,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 				queue.Add(key)
 			}
 		},
-	}, cache.Indexers{})
+	}, cache.Indexers{}) 
 
 	controller := NewController(queue, indexer, informer)
 
