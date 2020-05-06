@@ -86,33 +86,28 @@ func main() {
 				break
 			}
 		}
-
-		//TODO: Get agent from node IP
-		//Should be resolved when we add agent to kubelet
-		//We know IP and we know port (4445), so just send a request to it
-		//fmt.Println(podObj.Status.ContainerStatuses[0].ContainerID)
-
-		//getPodInfoFromAgent(nodeIP, podObj.Name)
+		
+		//todo: fix this asap
 		nodeIP := nodeObj.Status.Addresses[0].Address
 
 		fmt.Println(nodeIP)
 		//dockerID := podObj.Status.ContainerStatuses[0].ContainerID[9:]
 
-		cgId, dockerID := connectContainerRequest(nodeIP, podObj.Name)
+		dockerId := GetDockerId(podObj)
+		cgId, dockerID := connectContainerRequest(nodeIP, podObj.Name, dockerId)
 		exportDeployPodSpec(nodeIP, dockerID, cgId)
-
-		//TODO: get cgroup ID from pod
 
 		//break
 
 	}
 
 
-
-
-	//get node ips from node names
-
 }
+
+func GetDockerId(podObj *apiv1.Pod) string {
+	return podObj.Status.ContainerStatuses[0].ContainerID[9:]
+}
+
 //
 //TODO: json file should have port
 func exportDeployPodSpec(gcmIP string, dockerID string, cgroupId int32) {
@@ -143,7 +138,8 @@ func exportDeployPodSpec(gcmIP string, dockerID string, cgroupId int32) {
 }
 
 
-func connectContainerRequest(agentIP, podName string) (int32, string) {
+func connectContainerRequest(agentIP, podName, dockerId string) (int32, string) {
+	//todo: getpodfromname() and getDockerId() from agent into here (aka deployer) send over dockerid to agent for connectcontainer
 	conn, err := grpc.Dial(agentIP + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -155,6 +151,7 @@ func connectContainerRequest(agentIP, podName string) (int32, string) {
 	txMsg := &pb.ConnectContainerRequest{
 		GcmIP: agentIP,
 		PodName: podName,
+		DockerId: dockerId,
 	}
 	fmt.Println(txMsg)
 

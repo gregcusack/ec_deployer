@@ -13,8 +13,8 @@ github.com/Azure/go-autorest/autorest/mocks v0.3.0/go.mod h1:a8FDP3DYzQ4RYfVAxAN
 github.com/Azure/go-autorest/logger v0.1.0/go.mod h1:oExouG+K6PryycPJfVSxi/koC6LSNgds39diKLz7Vrc=
 github.com/Azure/go-autorest/tracing v0.5.0/go.mod h1:r/s2XiOKccPW3HrqB+W0TQzfbtp2fGCgRFtBroKn4Dk=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/Maziyar-Na/EC-Agent v0.0.0-20200501204013-14ebd596ab35 h1:ab5tGjhmG5sUg9TjHAh5RgSSKfeatdKnLlJ4l7CpY58=
-github.com/Maziyar-Na/EC-Agent v0.0.0-20200501204013-14ebd596ab35/go.mod h1:m5/SeyE+Q6zK8OJFcEjAEtd4/cVJqK6TFdKmTIXfJ1Y=
+github.com/Maziyar-Na/EC-Agent v0.0.0-20200506183705-3945b62e06e2 h1:sowu4vev1NWwKBkD2/WWc4GoQrAhbEPDS+Z/4GJApBM=
+github.com/Maziyar-Na/EC-Agent v0.0.0-20200506183705-3945b62e06e2/go.mod h1:m5/SeyE+Q6zK8OJFcEjAEtd4/cVJqK6TFdKmTIXfJ1Y=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=

@@ -3,7 +3,7 @@ module github.com/gregcusack/ec_deployer
 go 1.14
 
 require (
-	github.com/Maziyar-Na/EC-Agent v0.0.0-20200501204013-14ebd596ab35
+	github.com/Maziyar-Na/EC-Agent v0.0.0-20200506183705-3945b62e06e2
 	github.com/golang/protobuf v1.4.0
 	google.golang.org/grpc v1.28.1
 	google.golang.org/protobuf v1.21.0
