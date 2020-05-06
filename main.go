@@ -70,7 +70,7 @@ func main() {
 		podObj, _ := clientset.CoreV1().Pods(apiv1.NamespaceDefault).Get(context.TODO(), pod.Name, metav1.GetOptions{})
 
 		nodeObj,_ := clientset.CoreV1().Nodes().Get(context.TODO(), podObj.Spec.NodeName, metav1.GetOptions{})
-		fmt.Println(nodeObj.Status.Addresses)
+		//fmt.Println(nodeObj.Status.Addresses)
 		//nodeIP := nodeObj.Status.Addresses[0].Address
 		//fmt.Println("Node Name: " + podObj.Spec.NodeName + ", Node ip: " + nodeIP)
 
