@@ -8,9 +8,9 @@
                 "ports": 80,
                 "net": 10
         },
-        "gcmIP": "10.0.2.15",
+        "gcmIP": "128.105.144.165",
         "agentIPs": [
-            "10.0.2.15"
+            "128.105.144.160"
         ],
         "images": [
             "gregcusack/flask-app:absat-1",
@@ -20,8 +20,7 @@
             "f-1",
             "f-2"
         ],
-        "yaml_path" : [
-            "k8-yaml/"
-        ]
+        "deploymentPath" : "/mnt/ECKernel/DeathStarBench/mediaMicroservices/k8s-yaml/",
+	    "namespace": "media-microsvc"
     }]
 }
