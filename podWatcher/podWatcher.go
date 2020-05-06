@@ -9,6 +9,7 @@ package podWatcher
 import (
 	"fmt"
 	"time"
+	"context"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -162,7 +163,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 				queue.Add(key)
 			}
 			fmt.Printf("Update for Pod %s\n", new.(*corev1.Pod).GetName())
-			go handleUpdatePod(new.(*corev1.Pod))
+			go handleNewPod(new.(*corev1.Pod))
 		},
 		DeleteFunc: func(obj interface{}) {
 			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
@@ -181,10 +182,18 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 	return controller
 }
 
-func handleUpdatePod(podObj *corev1.Pod) {
-	//dockerId := GetDockerId(podObj)
-	fmt.Printf("Pod %s: %v+\n", podObj.GetName(), podObj)
-	//fmt.Printf("params Status %v++\n", podObj.GetUID())
+func handleNewPod(podObj *corev1.Pod) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	for {
+		out := podObj.Status.Phase
+		//fmt.Println(out)
+		if string(out) == "Running" || ctx.Err() != nil {
+			fmt.Printf("Pod Status: %s with name: %s\n", string(out), podObj.GetName())
+			fmt.Printf("docker id: %s \n", podObj.Status.ContainerStatuses[0].ContainerID[9:])
+			break
+		}
+	}
 }
 
 func GetDockerId(podObj *corev1.Pod) string {
