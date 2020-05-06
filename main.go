@@ -11,20 +11,20 @@ import (
 	//"strconv"
 	//"time"
 	"io/ioutil"
-	//"strings"
+	"strings"
 
 	// custom + k8s + grpc
 	//pb "github.com/Maziyar-Na/EC-Agent/grpc"
 	//dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
 	"github.com/gregcusack/ec_deployer/structs"
 	//"google.golang.org/grpc"
-	//appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	//apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	//"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	//"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 
@@ -104,99 +104,95 @@ func main() {
 func deployer(deploymentPath string, namespace string, clientset *kubernetes.Clientset) ([]string, error) {
 	// Now, we need to extract all pod names from the files in the deployment path so that we can keep track of them
 
-	// fmt.Printf("Reading Directory: %s\n", deploymentPath)
-	// files, err := ioutil.ReadDir(deploymentPath)
-	// if err != nil {
-	// 	fmt.Printf("[ERROR] Can't read files from deployment path directory: %s\n", deploymentPath)
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
-	// //acceptedK8sTypes := regexp.MustCompile(`(Deployment)`)
-	// podNames := []string{}
-	// // Todo:  get the namespace of the application here
-
-	// decode := scheme.Codecs.UniversalDeserializer().Decode
-	// for _, item := range files {
-	// 	filePath := fmt.Sprintf("%v", deploymentPath) + item.Name()
-	// 	fmt.Printf("Reading File: %s\n", filePath)
-
-	// 	// Attempt 1
-	// 	yamlFile, err := ioutil.ReadFile(filePath)
-	// 	if err != nil {
-	// 		fmt.Printf("Error in reading file: %s, Error: %s\n", filePath, err)
-	// 	}
-	// 	// There can be multiple yaml definitions per file
-	// 	docs := strings.Split(string(yamlFile), "\n---")
-	// 	res := []byte{}
-	// 	// Trim whitespace in both ends of each yaml docs.
-	// 	for _, doc := range docs {
-	// 		content := strings.TrimSpace(doc)
-	// 		// Ignore empty docs
-	// 		if content != "" {
-	// 			res = append(res, content+"\n"...)
-	// 		}
-	// 		obj, groupVersionKind, err := decode(res, nil, nil)
-	// 		if err != nil {
-	// 			fmt.Println(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
-	// 			continue
-	// 		}
-			
-	// 		switch groupVersionKind.Kind {
-	// 		case "Deployment":
-	// 			fmt.Printf("Found Deployment! \n")
-	// 			deploymentsClient := clientset.AppsV1().Deployments(namespace)
-	// 			originalDeployment := obj.(*appsv1.Deployment)
-	// 			for i := 0; i < len(originalDeployment.Spec.Template.Spec.Containers); i++ {
-	// 				fmt.Printf("Container Name: %s\n", originalDeployment.Spec.Template.Spec.Containers[i].Name)
-	// 				podNames = append(podNames, originalDeployment.Spec.Template.Spec.Containers[i].Name)
-
-	// 				// Todo:  Update limits here of each individual container here to be total limit/total containers...
-	// 				// resource: https://github.com/kubernetes/kubernetes/blob/master/pkg/controller/resourcequota/resource_quota_controller_test.go
-	// 				// originalDeployment.Spec.Template.Spec.Containers[i].Resources.Limits[corev1.ResourceCPU] = resource.MustParse("100m")
-	// 				// originalDeployment.Spec.Template.Spec.Containers[i].Resources.Limits[corev1.ResourceMemory] = resource.MustParse("1Gi")
-	// 				// fmt.Printf("Type: %++v\n", reflect.TypeOf(originalDeployment))
-	// 				// fmt.Printf("Container Limits: %s\n", originalDeployment.Spec.Template.Spec.Containers[i].Resources.Limits[corev1.ResourceCPU])
-	// 			}
-	// 			// example resource: https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go
-	// 			// API: https://godoc.org/k8s.io/api/apps/v1
-	// 			result, err := deploymentsClient.Create(context.TODO(), originalDeployment, metav1.CreateOptions{})
-	// 			if err != nil {
-	// 				panic(err)
-	// 			}
-	// 			fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
-	// 		case "Service":
-	// 			fmt.Printf("Found Service! \n")
-	// 			servicesClientInterface := clientset.CoreV1().Services(namespace)
-	// 			originalService := obj.(*corev1.Service)
-	// 			result, err := servicesClientInterface.Create(context.TODO(), originalService, metav1.CreateOptions{})
-	// 			if err != nil {
-	// 				panic(err)
-	// 			}
-	// 			fmt.Printf("Created Service %q.\n", result.GetObjectMeta().GetName())
-	// 		default:
-	// 			fmt.Printf("Unsupported Type: %s \n", groupVersionKind.Kind)
-	// 			continue
-	// 		}
-	// 	}
-	// 	fmt.Printf("\n")
-	// }
-	// return podNames, nil
-
-	podClient := clientset.CoreV1().Pods(namespace)
-	pod := createPodDefinition(namespace, "tmp", "nginx" )
-	result, err := podClient.Create(context.TODO(), pod, metav1.CreateOptions{})
-
+	fmt.Printf("Reading Directory: %s\n", deploymentPath)
+	files, err := ioutil.ReadDir(deploymentPath)
 	if err != nil {
-		panic(err)
+		fmt.Printf("[ERROR] Can't read files from deployment path directory: %s\n", deploymentPath)
+		fmt.Println(err)
+		os.Exit(1)
 	}
-	fmt.Println("Pod created successfully: " + result.GetObjectMeta().GetName())
+	//acceptedK8sTypes := regexp.MustCompile(`(Deployment)`)
 	podNames := []string{}
-	podNames = append(podNames,result.GetObjectMeta().GetName())
-	return podNames, nil
-}
+	// Todo:  get the namespace of the application here
 
-func GetDockerId(podObj *apiv1.Pod) string {
-	return podObj.Status.ContainerStatuses[0].ContainerID[9:]
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+	for _, item := range files {
+		filePath := fmt.Sprintf("%v", deploymentPath) + item.Name()
+		fmt.Printf("Reading File: %s\n", filePath)
+
+		// Attempt 1
+		yamlFile, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			fmt.Printf("Error in reading file: %s, Error: %s\n", filePath, err)
+		}
+		// There can be multiple yaml definitions per file
+		docs := strings.Split(string(yamlFile), "\n---")
+		res := []byte{}
+		// Trim whitespace in both ends of each yaml docs.
+		for _, doc := range docs {
+			content := strings.TrimSpace(doc)
+			// Ignore empty docs
+			if content != "" {
+				res = append(res, content+"\n"...)
+			}
+			obj, groupVersionKind, err := decode(res, nil, nil)
+			if err != nil {
+				fmt.Println(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
+				continue
+			}
+			
+			switch groupVersionKind.Kind {
+			case "Deployment":
+				fmt.Printf("Found Deployment! \n")
+				deploymentsClient := clientset.AppsV1().Deployments(namespace)
+				originalDeployment := obj.(*appsv1.Deployment)
+				for i := 0; i < len(originalDeployment.Spec.Template.Spec.Containers); i++ {
+					fmt.Printf("Container Name: %s\n", originalDeployment.Spec.Template.Spec.Containers[i].Name)
+					podNames = append(podNames, originalDeployment.Spec.Template.Spec.Containers[i].Name)
+
+					// Todo:  Update limits here of each individual container here to be total limit/total containers...
+					// resource: https://github.com/kubernetes/kubernetes/blob/master/pkg/controller/resourcequota/resource_quota_controller_test.go
+					// originalDeployment.Spec.Template.Spec.Containers[i].Resources.Limits[corev1.ResourceCPU] = resource.MustParse("100m")
+					// originalDeployment.Spec.Template.Spec.Containers[i].Resources.Limits[corev1.ResourceMemory] = resource.MustParse("1Gi")
+					// fmt.Printf("Type: %++v\n", reflect.TypeOf(originalDeployment))
+					// fmt.Printf("Container Limits: %s\n", originalDeployment.Spec.Template.Spec.Containers[i].Resources.Limits[corev1.ResourceCPU])
+				}
+				// example resource: https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go
+				// API: https://godoc.org/k8s.io/api/apps/v1
+				result, err := deploymentsClient.Create(context.TODO(), originalDeployment, metav1.CreateOptions{})
+				if err != nil {
+					panic(err)
+				}
+				fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+			case "Service":
+				fmt.Printf("Found Service! \n")
+				servicesClientInterface := clientset.CoreV1().Services(namespace)
+				originalService := obj.(*corev1.Service)
+				result, err := servicesClientInterface.Create(context.TODO(), originalService, metav1.CreateOptions{})
+				if err != nil {
+					panic(err)
+				}
+				fmt.Printf("Created Service %q.\n", result.GetObjectMeta().GetName())
+			default:
+				fmt.Printf("Unsupported Type: %s \n", groupVersionKind.Kind)
+				continue
+			}
+		}
+		fmt.Printf("\n")
+	}
+	return podNames, nil
+
+	// podClient := clientset.CoreV1().Pods(namespace)
+	// pod := createPodDefinition(namespace, "tmp", "nginx" )
+	// result, err := podClient.Create(context.TODO(), pod, metav1.CreateOptions{})
+
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println("Pod created successfully: " + result.GetObjectMeta().GetName())
+	// podNames := []string{}
+	// podNames = append(podNames,result.GetObjectMeta().GetName())
+	// return podNames, nil
 }
 
 func configK8() *kubernetes.Clientset {
