@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"time"
 	"context"
+	"log"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -23,7 +24,19 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
+	// grpc stuff
+	pb "github.com/Maziyar-Na/EC-Agent/grpc"
+	dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
+	"google.golang.org/grpc"
+	
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	//"k8s.io/client-go/kubernetes/scheme"
+
 )
+
+const AGENT_GRPC_PORT = ":4446"
+const GCM_GRPC_PORT = ":4447"
+const BUFFSIZE = 2048
 
 type Controller struct {
 	indexer  cache.Indexer
@@ -142,7 +155,7 @@ func CreateQueue() workqueue.RateLimitingInterface {
 }
 
 
-func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingInterface, gcmIP string, agentIPs []string) *Controller {
+func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingInterface, gcmIP string, clientset *kubernetes.Clientset) *Controller {
 	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
 	// whenever the cache is updated, the pod key is added sto the workqueue.
 	// Note that when we finally process the item from the workqueue, we might see a newer version
@@ -163,7 +176,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 				queue.Add(key)
 			}
 			fmt.Printf("Update for Pod %s\n", new.(*corev1.Pod).GetName())
-			go handleNewPod(new.(*corev1.Pod))
+			go handleNewPod(new.(*corev1.Pod), gcmIP, clientset)
 		},
 		DeleteFunc: func(obj interface{}) {
 			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
@@ -182,15 +195,22 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 	return controller
 }
 
-func handleNewPod(podObj *corev1.Pod) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func handleNewPod(podObj *corev1.Pod, gcmIP string, clientset *kubernetes.Clientset) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	for {
 		out := podObj.Status.Phase
 		//fmt.Println(out)
-		if string(out) == "Running" || ctx.Err() != nil {
+		if string(out) == "Running"{
 			fmt.Printf("Pod Status: %s with name: %s\n", string(out), podObj.GetName())
-			fmt.Printf("docker id: %s \n", podObj.Status.ContainerStatuses[0].ContainerID[9:])
+			nodeObj,_ := clientset.CoreV1().Nodes().Get(context.TODO(), podObj.Spec.NodeName, metav1.GetOptions{})
+			nodeIP := nodeObj.Status.Addresses[0].Address
+
+			dockerId := GetDockerId(podObj)
+			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId)
+			exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)			
+			break
+		} else if ctx.Err() != nil {
 			break
 		}
 	}
@@ -198,4 +218,59 @@ func handleNewPod(podObj *corev1.Pod) {
 
 func GetDockerId(podObj *corev1.Pod) string {
 	return podObj.Status.ContainerStatuses[0].ContainerID[9:]
+}
+
+//TODO: json file should have port
+func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId int32) {
+	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := dgrpc.NewDeployerExportClient(conn)
+
+	txMsg := &dgrpc.ExportPodSpec{
+		DockerId: dockerID,
+		CgroupId: cgroupId,
+		NodeIp: nodeIP,
+	}
+
+	fmt.Println(txMsg)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	r, err := c.ReportPodSpec(ctx, txMsg)
+	if err != nil {
+		log.Fatalf("could not ExportPodSpec: %v", err)
+	}
+	log.Println("Rx back from gcm: ", r.GetDockerId(), r.GetCgroupId(), r.GetNodeIp(), r.GetThanks())
+
+}
+
+func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, string) {
+	//todo: getpodfromname() and getDockerId() from agent into here (aka deployer) send over dockerid to agent for connectcontainer
+	conn, err := grpc.Dial(agentIP + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewHandlerClient(conn)
+
+	txMsg := &pb.ConnectContainerRequest{
+		GcmIP: gcmIP,
+		PodName: podName,
+		DockerId: dockerId,
+	}
+	fmt.Println(txMsg)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	r, err := c.ReqConnectContainer(ctx,txMsg)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Println("Rx back: ", r.GetPodName(), r.GetDockerID(), r.GetCgroupID())
+	return r.GetCgroupID(), r.GetDockerID()
+
 }

@@ -9,15 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	//"strconv"
-	"time"
+	//"time"
 	"io/ioutil"
 	//"strings"
 
 	// custom + k8s + grpc
-	pb "github.com/Maziyar-Na/EC-Agent/grpc"
-	dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
+	//pb "github.com/Maziyar-Na/EC-Agent/grpc"
+	//dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
 	"github.com/gregcusack/ec_deployer/structs"
-	"google.golang.org/grpc"
+	//"google.golang.org/grpc"
 	//appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,10 +31,6 @@ import (
 	// PodWatcher
 	"github.com/gregcusack/ec_deployer/podWatcher"
 )
-
-const AGENT_GRPC_PORT = ":4446"
-const GCM_GRPC_PORT = ":4447"
-const BUFFSIZE = 2048
 
 func main() {
 
@@ -88,7 +84,7 @@ func main() {
 	podListWatcher := podWatcher.ListWatcher(namespace, clientset)
 	queue := podWatcher.CreateQueue()
 
-	controller := podWatcher.SetupWatcher(podListWatcher, queue, gcmIP, agentIPs)
+	controller := podWatcher.SetupWatcher(podListWatcher, queue, gcmIP, clientset)
 	// Now let's start the controller on a seperate thread
 	stop := make(chan struct{})
 	defer close(stop)
@@ -201,64 +197,6 @@ func deployer(deploymentPath string, namespace string, clientset *kubernetes.Cli
 
 func GetDockerId(podObj *apiv1.Pod) string {
 	return podObj.Status.ContainerStatuses[0].ContainerID[9:]
-}
-
-//
-//TODO: json file should have port
-func exportDeployPodSpec(gcmIP, nodeIP string, dockerID string, cgroupId int32) {
-	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
-	c := dgrpc.NewDeployerExportClient(conn)
-
-	txMsg := &dgrpc.ExportPodSpec{
-		DockerId: dockerID,
-		CgroupId: cgroupId,
-		NodeIp: nodeIP,
-	}
-
-	fmt.Println(txMsg)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	r, err := c.ReportPodSpec(ctx, txMsg)
-	if err != nil {
-		log.Fatalf("could not ExportPodSpec: %v", err)
-	}
-	log.Println("Rx back from gcm: ", r.GetDockerId(), r.GetCgroupId(), r.GetNodeIp(), r.GetThanks())
-
-}
-
-
-func connectContainerRequest(gcmIP, agentIP, podName, dockerId string) (int32, string) {
-	//todo: getpodfromname() and getDockerId() from agent into here (aka deployer) send over dockerid to agent for connectcontainer
-	conn, err := grpc.Dial(agentIP + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
-	c := pb.NewHandlerClient(conn)
-
-	//TODO: agentIP needs to be GcmIP
-	txMsg := &pb.ConnectContainerRequest{
-		GcmIP: gcmIP,
-		PodName: podName,
-		DockerId: dockerId,
-	}
-	fmt.Println(txMsg)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	r, err := c.ReqConnectContainer(ctx,txMsg)
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-	log.Println("Rx back: ", r.GetPodName(), r.GetDockerID(), r.GetCgroupID())
-	return r.GetCgroupID(), r.GetDockerID()
-
 }
 
 func configK8() *kubernetes.Clientset {
