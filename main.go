@@ -86,7 +86,7 @@ func main() {
 				break
 			}
 		}
-		
+
 		//todo: fix this asap
 		nodeIP := nodeObj.Status.Addresses[0].Address
 
