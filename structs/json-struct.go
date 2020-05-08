@@ -11,8 +11,6 @@ type DeploymentDefinition struct {
 		} `json:"specs"`
 		GcmIP    string   		`json:"gcmIP"`
 		AgentIPs []string 		`json:"agentIPs"`
-		Images   []string 		`json:"images"`
-		PodNames []string 		`json:"pod-names"`
 		DeploymentPath string 	`json:"deploymentPath"`
 		Namespace string		`json:"namespace"`
 	} `json:"DC-def"`

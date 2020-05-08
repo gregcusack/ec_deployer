@@ -172,7 +172,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(new)
-			if err == nil {
+			if err == nil  {
 				queue.Add(key)
 			}
 			fmt.Printf("Update for Pod %s\n", new.(*corev1.Pod).GetName())
@@ -182,7 +182,6 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
 			// key function.
 			fmt.Printf("Delete for Pod %s\n", obj.(*corev1.Pod).GetName())
-			// This is where we'd want the GRPC call for calling disconnecting container from the GCM on deleted pods would be (i.e. if and when a pod gets killed, we can identify it here)
 			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 			if err == nil {
 				queue.Add(key)
@@ -217,6 +216,7 @@ func handleNewPod(podObj *corev1.Pod, gcmIP string, clientset *kubernetes.Client
 }
 
 func GetDockerId(podObj *corev1.Pod) string {
+	// This returns the first container manually 
 	return podObj.Status.ContainerStatuses[0].ContainerID[9:]
 }
 

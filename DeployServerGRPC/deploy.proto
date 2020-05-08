@@ -3,10 +3,11 @@ option go_package = ".;ec.rpc";
 
 package ec.rpc;
 
-// The greeting service definition.
+// The greeting service definition. 
 service DeployerExport {
   // Sends a greeting
   rpc ReportPodSpec (ExportPodSpec) returns (PodSpecReply) {}
+  // New service to delete
 }
 
 // The request message containing the user's name.
