@@ -85,7 +85,17 @@
         ```
         ./ec_gcm tests/app_def.json
         ```
-4. Run Deployer on the master node
+
+4. Deploy Pods on Master Node
+    - To run Deployer: 
+        ```
+        go run main.go -f app_deploy.json
+        ```
+        Note: If you see the error: `fatal: could not read Username for 'https://github.com': terminal prompts disabled`, then you need to do the following to solve it:
+        - `git config --global --add url."git@github.com:".insteadOf "https://github.com/"`
+
+        
+<!--Run Deployer on the master node
     - Create a namespace that the application will be deployed to - this should match up with the namespace string in your app_def.json file
         - to create namespace, use: `kubectl create ns <namespace>`
     - Update app_def.json to point to the correct path for the application and the GCM/Agent IPs 
@@ -96,7 +106,7 @@
         Note: If you see the error: `fatal: could not read Username for 'https://github.com': terminal prompts disabled`, then you need to do the following to solve it:
         - `git config --global --add url."git@github.com:".insteadOf "https://github.com/"`
     - To clean up all pods in a namespace, delete the namespace via: `kubectl delete ns <namespace>`
-
+-->
 <!-- ## Setup Steps:
 1. Install Docker and Kubernetes and Go
 2. Instantiate a K8s cluster
