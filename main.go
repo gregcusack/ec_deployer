@@ -29,20 +29,26 @@ const GCM_GRPC_PORT = ":4447"
 const BUFFSIZE = 2048
 
 func main() {
+	// First, we parse the application definition file for app statisitics
+	appDefFilePtr := flag.String("f", "", "App Definition File to parse. (Required)")
+	flag.Parse()
 
-	args := os.Args[1:]
-
-	if len(args) != 1 {
-		log.Fatal("Pls pass in deploy file via: ./main .go <json-file>")
+	if *appDefFilePtr == "" {
+		fmt.Println("Must pass in a file path to the app definition file: ")
+		flag.PrintDefaults()
+		os.Exit(1)
 	}
 
-	jsonFile, err := os.Open(args[0])
+	jsonAppDefFile, err := os.Open(*appDefFilePtr)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
-	defer jsonFile.Close()
 
-	byteVal, _ := ioutil.ReadAll(jsonFile)
+	fmt.Printf("[DBG] Successfully opened %s\n", *appDefFilePtr)
+	defer jsonAppDefFile.Close()
+
+	byteVal, _ := ioutil.ReadAll(jsonAppDefFile)
 
 	//var dcDefs DcDefs
 	var dcDefs structs.DeploymentDefinition
