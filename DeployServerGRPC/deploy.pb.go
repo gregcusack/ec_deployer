@@ -165,6 +165,108 @@ func (x *PodSpecReply) GetThanks() string {
 	return ""
 }
 
+type ExportDeletePod struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	DockerId string `protobuf:"bytes,1,opt,name=docker_id,json=dockerId,proto3" json:"docker_id,omitempty"`
+}
+
+func (x *ExportDeletePod) Reset() {
+	*x = ExportDeletePod{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_deploy_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ExportDeletePod) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportDeletePod) ProtoMessage() {}
+
+func (x *ExportDeletePod) ProtoReflect() protoreflect.Message {
+	mi := &file_deploy_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportDeletePod.ProtoReflect.Descriptor instead.
+func (*ExportDeletePod) Descriptor() ([]byte, []int) {
+	return file_deploy_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ExportDeletePod) GetDockerId() string {
+	if x != nil {
+		return x.DockerId
+	}
+	return ""
+}
+
+type DeletePodReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	DockerId string `protobuf:"bytes,1,opt,name=docker_id,json=dockerId,proto3" json:"docker_id,omitempty"`
+	Thanks   string `protobuf:"bytes,4,opt,name=thanks,proto3" json:"thanks,omitempty"`
+}
+
+func (x *DeletePodReply) Reset() {
+	*x = DeletePodReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_deploy_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeletePodReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeletePodReply) ProtoMessage() {}
+
+func (x *DeletePodReply) ProtoReflect() protoreflect.Message {
+	mi := &file_deploy_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeletePodReply.ProtoReflect.Descriptor instead.
+func (*DeletePodReply) Descriptor() ([]byte, []int) {
+	return file_deploy_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *DeletePodReply) GetDockerId() string {
+	if x != nil {
+		return x.DockerId
+	}
+	return ""
+}
+
+func (x *DeletePodReply) GetThanks() string {
+	if x != nil {
+		return x.Thanks
+	}
+	return ""
+}
+
 var File_deploy_proto protoreflect.FileDescriptor
 
 var file_deploy_proto_rawDesc = []byte{
@@ -183,13 +285,25 @@ var file_deploy_proto_rawDesc = []byte{
 	0x75, 0x70, 0x49, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x70, 0x18,
 	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x70, 0x12, 0x16, 0x0a,
 	0x06, 0x74, 0x68, 0x61, 0x6e, 0x6b, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74,
-	0x68, 0x61, 0x6e, 0x6b, 0x73, 0x32, 0x50, 0x0a, 0x0e, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x65,
-	0x72, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x12, 0x3e, 0x0a, 0x0d, 0x52, 0x65, 0x70, 0x6f, 0x72,
-	0x74, 0x50, 0x6f, 0x64, 0x53, 0x70, 0x65, 0x63, 0x12, 0x15, 0x2e, 0x65, 0x63, 0x2e, 0x72, 0x70,
-	0x63, 0x2e, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x50, 0x6f, 0x64, 0x53, 0x70, 0x65, 0x63, 0x1a,
-	0x14, 0x2e, 0x65, 0x63, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x50, 0x6f, 0x64, 0x53, 0x70, 0x65, 0x63,
-	0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x00, 0x42, 0x0a, 0x5a, 0x08, 0x2e, 0x3b, 0x65, 0x63, 0x2e,
-	0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x68, 0x61, 0x6e, 0x6b, 0x73, 0x22, 0x2e, 0x0a, 0x0f, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x50, 0x6f, 0x64, 0x12, 0x1b, 0x0a, 0x09, 0x64, 0x6f, 0x63, 0x6b,
+	0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x64, 0x6f, 0x63,
+	0x6b, 0x65, 0x72, 0x49, 0x64, 0x22, 0x45, 0x0a, 0x0e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x50,
+	0x6f, 0x64, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x1b, 0x0a, 0x09, 0x64, 0x6f, 0x63, 0x6b, 0x65,
+	0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x64, 0x6f, 0x63, 0x6b,
+	0x65, 0x72, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x68, 0x61, 0x6e, 0x6b, 0x73, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x68, 0x61, 0x6e, 0x6b, 0x73, 0x32, 0x90, 0x01, 0x0a,
+	0x0e, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x65, 0x72, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x12,
+	0x3e, 0x0a, 0x0d, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x50, 0x6f, 0x64, 0x53, 0x70, 0x65, 0x63,
+	0x12, 0x15, 0x2e, 0x65, 0x63, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74,
+	0x50, 0x6f, 0x64, 0x53, 0x70, 0x65, 0x63, 0x1a, 0x14, 0x2e, 0x65, 0x63, 0x2e, 0x72, 0x70, 0x63,
+	0x2e, 0x50, 0x6f, 0x64, 0x53, 0x70, 0x65, 0x63, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x00, 0x12,
+	0x3e, 0x0a, 0x09, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x50, 0x6f, 0x64, 0x12, 0x17, 0x2e, 0x65,
+	0x63, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x50, 0x6f, 0x64, 0x1a, 0x16, 0x2e, 0x65, 0x63, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x50, 0x6f, 0x64, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x00, 0x42,
+	0x0a, 0x5a, 0x08, 0x2e, 0x3b, 0x65, 0x63, 0x2e, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -204,16 +318,20 @@ func file_deploy_proto_rawDescGZIP() []byte {
 	return file_deploy_proto_rawDescData
 }
 
-var file_deploy_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_deploy_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_deploy_proto_goTypes = []interface{}{
-	(*ExportPodSpec)(nil), // 0: ec.rpc.ExportPodSpec
-	(*PodSpecReply)(nil),  // 1: ec.rpc.PodSpecReply
+	(*ExportPodSpec)(nil),   // 0: ec.rpc.ExportPodSpec
+	(*PodSpecReply)(nil),    // 1: ec.rpc.PodSpecReply
+	(*ExportDeletePod)(nil), // 2: ec.rpc.ExportDeletePod
+	(*DeletePodReply)(nil),  // 3: ec.rpc.DeletePodReply
 }
 var file_deploy_proto_depIdxs = []int32{
 	0, // 0: ec.rpc.DeployerExport.ReportPodSpec:input_type -> ec.rpc.ExportPodSpec
-	1, // 1: ec.rpc.DeployerExport.ReportPodSpec:output_type -> ec.rpc.PodSpecReply
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: ec.rpc.DeployerExport.DeletePod:input_type -> ec.rpc.ExportDeletePod
+	1, // 2: ec.rpc.DeployerExport.ReportPodSpec:output_type -> ec.rpc.PodSpecReply
+	3, // 3: ec.rpc.DeployerExport.DeletePod:output_type -> ec.rpc.DeletePodReply
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -249,6 +367,30 @@ func file_deploy_proto_init() {
 				return nil
 			}
 		}
+		file_deploy_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ExportDeletePod); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_deploy_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeletePodReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -256,7 +398,7 @@ func file_deploy_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_deploy_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -284,6 +426,7 @@ const _ = grpc.SupportPackageIsVersion6
 type DeployerExportClient interface {
 	// Sends a greeting
 	ReportPodSpec(ctx context.Context, in *ExportPodSpec, opts ...grpc.CallOption) (*PodSpecReply, error)
+	DeletePod(ctx context.Context, in *ExportDeletePod, opts ...grpc.CallOption) (*DeletePodReply, error)
 }
 
 type deployerExportClient struct {
@@ -303,10 +446,20 @@ func (c *deployerExportClient) ReportPodSpec(ctx context.Context, in *ExportPodS
 	return out, nil
 }
 
+func (c *deployerExportClient) DeletePod(ctx context.Context, in *ExportDeletePod, opts ...grpc.CallOption) (*DeletePodReply, error) {
+	out := new(DeletePodReply)
+	err := c.cc.Invoke(ctx, "/ec.rpc.DeployerExport/DeletePod", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DeployerExportServer is the server API for DeployerExport service.
 type DeployerExportServer interface {
 	// Sends a greeting
 	ReportPodSpec(context.Context, *ExportPodSpec) (*PodSpecReply, error)
+	DeletePod(context.Context, *ExportDeletePod) (*DeletePodReply, error)
 }
 
 // UnimplementedDeployerExportServer can be embedded to have forward compatible implementations.
@@ -315,6 +468,9 @@ type UnimplementedDeployerExportServer struct {
 
 func (*UnimplementedDeployerExportServer) ReportPodSpec(context.Context, *ExportPodSpec) (*PodSpecReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReportPodSpec not implemented")
+}
+func (*UnimplementedDeployerExportServer) DeletePod(context.Context, *ExportDeletePod) (*DeletePodReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePod not implemented")
 }
 
 func RegisterDeployerExportServer(s *grpc.Server, srv DeployerExportServer) {
@@ -339,6 +495,24 @@ func _DeployerExport_ReportPodSpec_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DeployerExport_DeletePod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportDeletePod)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeployerExportServer).DeletePod(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ec.rpc.DeployerExport/DeletePod",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeployerExportServer).DeletePod(ctx, req.(*ExportDeletePod))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _DeployerExport_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ec.rpc.DeployerExport",
 	HandlerType: (*DeployerExportServer)(nil),
@@ -346,6 +520,10 @@ var _DeployerExport_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReportPodSpec",
 			Handler:    _DeployerExport_ReportPodSpec_Handler,
+		},
+		{
+			MethodName: "DeletePod",
+			Handler:    _DeployerExport_DeletePod_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

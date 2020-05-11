@@ -7,28 +7,28 @@
 package podWatcher
 
 import (
-	"fmt"
-	"time"
 	"context"
+	"fmt"
 	"log"
+	"sync"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
-
-	// Controller
-	"k8s.io/klog"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	// Controller
+	"k8s.io/klog"
 
 	// grpc stuff
 	pb "github.com/Maziyar-Na/EC-Agent/grpc"
 	dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
 	"google.golang.org/grpc"
-	
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	//"k8s.io/client-go/kubernetes/scheme"
 
@@ -38,11 +38,37 @@ const AGENT_GRPC_PORT = ":4446"
 const GCM_GRPC_PORT = ":4447"
 const BUFFSIZE = 2048
 
+type podNameToDockerIdMap struct {
+	sync.RWMutex
+	internal map[string]string
+}
+
+func (m *podNameToDockerIdMap) Read(key string) (string, bool) {
+	m.RLock()
+	result, ok := m.internal[key]
+	m.RUnlock()
+	return result, ok
+}
+
+func (m *podNameToDockerIdMap) Insert(key, value string) {
+	m.Lock()
+	m.internal[key] = value
+	m.Unlock()
+}
+
+func (m *podNameToDockerIdMap) Delete(key string) {
+	m.Lock()
+	delete(m.internal, key)
+	m.Unlock()
+}
+
 type Controller struct {
 	indexer  cache.Indexer
 	queue    workqueue.RateLimitingInterface
 	informer cache.Controller
 }
+
+var m *podNameToDockerIdMap
 
 func NewController(queue workqueue.RateLimitingInterface, indexer cache.Indexer, informer cache.Controller) *Controller {
 	return &Controller{
@@ -119,6 +145,7 @@ func (c *Controller) handleErr(err error, key interface{}) {
 }
 
 func (c *Controller) Run(threadiness int, stopCh chan struct{}) {
+	initMap()
 	defer runtime.HandleCrash()
 
 	// Let the workers stop when we are done
@@ -144,6 +171,10 @@ func (c *Controller) Run(threadiness int, stopCh chan struct{}) {
 func (c *Controller) runWorker() {
 	for c.processNextItem() {
 	}
+}
+
+func initMap() {
+	m = &podNameToDockerIdMap{internal: map[string]string{}}
 }
 
 func ListWatcher(namespace string, clientset *kubernetes.Clientset) *cache.ListWatch {
@@ -187,6 +218,15 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			if err == nil {
 				queue.Add(key)
 			}
+			//TODO: need to get DockerID here before pod is actually deleted!
+			//fmt.Println(obj.(*corev1.Pod))
+			if dockerId, ok := m.Read(obj.(*corev1.Pod).Name); ok {
+				go exportDeletePod(gcmIP, dockerId)
+				m.Delete(obj.(*corev1.Pod).Name)
+			} else {
+				fmt.Println("Failed to get dockerId from map! (" + obj.(*corev1.Pod).Name + ")")
+			}
+			//go exportDeletePod(gcmIP, dockerId)
 		},
 	}, cache.Indexers{}) 
 
@@ -207,6 +247,8 @@ func handleNewPod(podObj *corev1.Pod, gcmIP string, clientset *kubernetes.Client
 			nodeIP := nodeObj.Status.Addresses[0].Address
 
 			dockerId := GetDockerId(podObj)
+
+			m.Insert(podObj.GetName(), dockerId)
 			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId)
 			exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)			
 			break
@@ -246,6 +288,30 @@ func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId 
 	}
 	log.Println("Rx back from gcm: ", r.GetDockerId(), r.GetCgroupId(), r.GetNodeIp(), r.GetThanks())
 
+}
+
+func exportDeletePod(gcmIP string, dockerId string) {
+	fmt.Println("export Delete Pod (dId): " + dockerId)
+	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := dgrpc.NewDeployerExportClient(conn)
+	txMsg := &dgrpc.ExportDeletePod{
+		DockerId: dockerId,
+	}
+
+	fmt.Println(txMsg)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	r, err := c.DeletePod(ctx, txMsg)
+	if err != nil {
+		log.Fatalf("could not ExportDeletePod: %v", err)
+	}
+	log.Println("Rx back from gcm: ", r.GetDockerId(), r.GetThanks())
 }
 
 func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, string) {

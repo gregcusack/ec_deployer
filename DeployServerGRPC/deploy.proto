@@ -7,6 +7,7 @@ package ec.rpc;
 service DeployerExport {
   // Sends a greeting
   rpc ReportPodSpec (ExportPodSpec) returns (PodSpecReply) {}
+  rpc DeletePod (ExportDeletePod) returns (DeletePodReply) {}
 }
 
 // The request message containing the user's name.
@@ -21,5 +22,14 @@ message PodSpecReply {
   string docker_id = 1;
   int32 cgroup_id = 2;
   string node_ip = 3;
+  string thanks = 4;
+}
+
+message ExportDeletePod {
+  string docker_id = 1;
+}
+
+message DeletePodReply {
+  string docker_id = 1;
   string thanks = 4;
 }
