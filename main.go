@@ -33,7 +33,6 @@ import (
 )
 
 func main() {
-
 	// First, we parse the application definition file for app statisitics
 	appDefFilePtr := flag.String("f", "", "App Definition File to parse. (Required)")
 	flag.Parse()
