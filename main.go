@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	//"time"
+	"time"
 	"io/ioutil"
 	"strings"
 
@@ -21,12 +21,15 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	// PodWatcher
 	"github.com/gregcusack/ec_deployer/podWatcher"
 
-	"k8s.io/apimachinery/pkg/api/resource"
+	dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
+	"google.golang.org/grpc"
 )
+const GCM_GRPC_PORT = ":4447"
 
 func main() {
 
@@ -91,7 +94,7 @@ func main() {
 		
 		// Deploy the Application nominally - as it would be via `kubectl apply -f` and get the container names of all pods in the application
 		fmt.Printf("[DBG] Deploying Application %s here  \n", appName)
-		err := deployer(deploymentPath, namespace, cpuLimit, memLimit, clientset)
+		err := deployer(appName, gcmIP, deploymentPath, namespace, cpuLimit, memLimit, clientset)
 		if err != nil {
 			fmt.Printf("Error in parsing through deployment")
 		}
@@ -102,7 +105,7 @@ func main() {
 	select {}
 }
 
-func deployer(deploymentPath string, namespace string, cpuLimit int, memLimit int, clientset *kubernetes.Clientset) (error) {
+func deployer(appName string, gcmIP string, deploymentPath string, namespace string, cpuLimit int, memLimit int, clientset *kubernetes.Clientset) (error) {
 	fmt.Printf("Reading Directory: %s\n", deploymentPath)
 	files, err := ioutil.ReadDir(deploymentPath)
 	if err != nil {
@@ -112,11 +115,17 @@ func deployer(deploymentPath string, namespace string, cpuLimit int, memLimit in
 	}
 
 
-	// get total number of Pods first
+	/* Step 1. Tell GCM the application limits via GRPC request */
+	sendAppSpecs(gcmIP, appName, cpuLimit, memLimit)	
+	fmt.Println("Sent App specs to GCM. Press Enter to continue Deployment")
+    fmt.Scanln() // wait for Enter Key
+
+	/* Step 2. Get total number of Pods  */
 	fmt.Printf("Reading Files to get number of pods:.. \n")
 	totalPods:= int(getNumPods(deploymentPath, namespace, files, clientset))
 	fmt.Printf("Total Number of Pods in Application:  %d\n", totalPods)
 
+	/* Step 3. Go through each yaml file, set individual pod limits and deploy the deployment */
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	for _, item := range files {
 		filePath := fmt.Sprintf("%v", deploymentPath) + item.Name()
@@ -155,7 +164,7 @@ func deployer(deploymentPath string, namespace string, cpuLimit int, memLimit in
 					contMem := strconv.Itoa(int(memLimit/totalPods))+ "Mi"
 					fmt.Printf("Container limits: %s, %s \n", contCpu, contMem)
 					// First argument is the "requests" and the 2nd argument is "limits"
-					resReq := getResourceRequirements(getResourceList(contCpu, contMem), getResourceList(contCpu, contMem))
+					resReq := getResourceRequirements(getResourceList(contCpu, "0Mi"), getResourceList(contCpu, contMem))
 					// resource: https://github.com/kubernetes/kubernetes/blob/master/pkg/controller/resourcequota/resource_quota_controller_test.go
 					originalDeployment.Spec.Template.Spec.Containers[i].Resources = resReq
 					
@@ -185,6 +194,32 @@ func deployer(deploymentPath string, namespace string, cpuLimit int, memLimit in
 		fmt.Printf("\n")
 	}
 	return nil
+}
+
+func sendAppSpecs(gcmIP string, appName string, cpuLimit int, memLimit int) {
+	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+
+	c := dgrpc.NewDeployerExportClient(conn)
+
+	txMsg := &dgrpc.ExportAppSpec{
+		AppName: appName,
+		CpuLimit: int32(cpuLimit),
+		MemLimit: int32(memLimit),
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	r, err := c.ReportAppSpec(ctx, txMsg)
+	if err != nil {
+		log.Fatalf("could not ExportAppSpec: %v", err)
+	}
+	log.Println("Rx back from gcm: ", r.GetAppName(), r.GetCpu_Limit(), r.GetMemLimit(), r.GetThanks())
+
 }
 
 func configK8() *kubernetes.Clientset {
