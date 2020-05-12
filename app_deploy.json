@@ -8,12 +8,11 @@
                 "ports": 80,
                 "net": 10
         },
-        "gcmIP": "128.105.144.165",
+        "gcmIP": "10.0.2.15",
         "agentIPs": [
-            "128.105.144.160",
-            "128.105.144.143"
+            "10.0.2.15"
         ],
-        "deploymentPath" : "/mnt/ECKernel/DeathStarBench/mediaMicroservices/k8s-yaml/",
+        "deploymentPath" : "/home/greg/Desktop/kub/test/",
 	    "namespace": "media-microsvc"
     }]
 }

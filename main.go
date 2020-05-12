@@ -206,8 +206,8 @@ func sendAppSpecs(gcmIP string, appName string, cpuLimit int, memLimit int) {
 
 	txMsg := &dgrpc.ExportAppSpec{
 		AppName: appName,
-		CpuLimit: int32(cpuLimit),
-		MemLimit: int32(memLimit),
+		CpuLimit: uint64(cpuLimit),
+		MemLimit: uint64(memLimit),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
