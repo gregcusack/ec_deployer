@@ -7,7 +7,7 @@ package ec.rpc;
 service DeployerExport {
   // Sends a greeting
   rpc ReportPodSpec (ExportPodSpec) returns (PodSpecReply) {}
-  // New service to delete
+  rpc ReportAppSpec (ExportAppSpec) returns (AppSpecReply) {}
 }
 
 // The request message containing the user's name.
@@ -22,5 +22,20 @@ message PodSpecReply {
   string docker_id = 1;
   int32 cgroup_id = 2;
   string node_ip = 3;
+  string thanks = 4;
+}
+
+// The request message containing App Specs
+message ExportAppSpec {
+  string app_name = 1;
+  int32 cpu_Limit = 2;
+  int32 mem_limit = 3;
+}
+
+// The AppSpecReply message containing confirmation of App Specs
+message AppSpecReply {
+  string app_name = 1;
+  int32 cpu_Limit = 2;
+  int32 mem_limit = 3;
   string thanks = 4;
 }
