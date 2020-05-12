@@ -32,7 +32,6 @@ import (
 const GCM_GRPC_PORT = ":4447"
 
 func main() {
-
 	// First, we parse the application definition file for app statisitics
 	appDefFilePtr := flag.String("f", "", "App Definition File to parse. (Required)")
 	flag.Parse()
