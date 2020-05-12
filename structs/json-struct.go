@@ -9,10 +9,9 @@ type DeploymentDefinition struct {
 			Ports int `json:"ports"`
 			Net   int `json:"net"`
 		} `json:"specs"`
-		GcmIP    string   `json:"gcmIP"`
-		AgentIPs []string `json:"agentIPs"`
-		Images   []string `json:"images"`
-		PodNames []string `json:"pod-names"`
-		YamlPath []string `json:"yaml_path"`
+		GcmIP    string   		`json:"gcmIP"`
+		AgentIPs []string 		`json:"agentIPs"`
+		DeploymentPath string 	`json:"deploymentPath"`
+		Namespace string		`json:"namespace"`
 	} `json:"DC-def"`
 }
