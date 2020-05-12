@@ -200,14 +200,70 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			// This is where we'd want the GRPC call for calling sysconnect on new pods would be (I think.. because it would handle pods being created and spun)
 			// Get Docker ID
 			fmt.Printf("Add for Pod %s: +\n", obj.(*corev1.Pod).GetName())
+			//go handleNewPod(obj.(*corev1.Pod), gcmIP, clientset)
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(new)
 			if err == nil {
 				queue.Add(key)
 			}
-			fmt.Printf("Update for Pod %s\n", new.(*corev1.Pod).GetName())
-			go handleNewPod(new.(*corev1.Pod), gcmIP, clientset)
+			ns, _, _ := cache.SplitMetaNamespaceKey(key)
+			fmt.Println(ns)
+			podNew := new.(*corev1.Pod)
+			podOld := old.(*corev1.Pod)
+			//fmt.Printf("Update for new Pod %s\n", podNew.GetName())
+			//fmt.Println(podNew.Status.InitContainerStatuses)
+			//for i := range podNew.Status.InitContainerStatuses {
+			//	container := podNew.Status.InitContainerStatuses[i]
+			//	fmt.Println(container.State)
+			//}
+			//fmt.Println("Update for old pod: " + podOld.GetName())
+			//fmt.Println(podOld.Status.InitContainerStatuses)
+			//for i := range podOld.Status.InitContainerStatuses {
+			//	container := podOld.Status.InitContainerStatuses[i]
+			//	fmt.Println(container.State)
+			//}
+			fmt.Println("###############")
+			for i := range podNew.Status.ContainerStatuses {
+				container := podNew.Status.ContainerStatuses[i]
+				if container.State.Waiting != nil && container.State.Waiting.Reason != "" {
+					fmt.Println(container.State.Waiting.Reason)
+					go handleNewPod(podNew, ns, gcmIP, clientset)
+				}
+			}
+			//fmt.Println("xxxxxxxx")
+			//for i := range podOld.Status.ContainerStatuses {
+			//	container := podOld.Status.ContainerStatuses[i]
+			//	if container.State.Waiting != nil && container.State.Waiting.Reason != "" {
+			//		fmt.Println(container.State.Waiting.Reason)
+			//	}
+			//}
+			////fmt.Println(podNew.Status.ContainerStatuses[0].State)
+			//fmt.Println("*******")
+			//fmt.Println(podNew.Status.Conditions)
+			//fmt.Println("-------------------")
+
+			//fmt.Println(new.(*corev1.Pod).Status.InitContainerStatuses[0].State)
+			//fmt.Printf("Update for Pod %s\n", new.(*corev1.Pod).GetName())
+			//fmt.Println("Update for old pod: " + old.(*corev1.Pod).GetName())
+			//fmt.Println("Status for old: " + old.(*corev1.Pod).Status.Phase)
+			if podOld.DeletionTimestamp != nil {
+				fmt.Println("Old Pod is terminating! name: " + podOld.GetName())
+				if dockerId, ok := m.Read(podOld.GetName()); ok {
+					go exportDeletePod(gcmIP, dockerId)
+					fmt.Println("Deleting Docker id: " + dockerId)
+					m.Delete(podOld.GetName())
+				} else {
+					fmt.Println("Failed to get dockerId from map! (" + podOld.GetName() + ")")
+				}
+			}
+			//else {
+			//	go handleNewPod(new.(*corev1.Pod), gcmIP, clientset)
+			//}
+
+
+
+
 		},
 		DeleteFunc: func(obj interface{}) {
 			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
@@ -220,12 +276,13 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			}
 			//TODO: need to get DockerID here before pod is actually deleted!
 			//fmt.Println(obj.(*corev1.Pod))
-			if dockerId, ok := m.Read(obj.(*corev1.Pod).Name); ok {
-				go exportDeletePod(gcmIP, dockerId)
-				m.Delete(obj.(*corev1.Pod).Name)
-			} else {
-				fmt.Println("Failed to get dockerId from map! (" + obj.(*corev1.Pod).Name + ")")
-			}
+			//if dockerId, ok := m.Read(obj.(*corev1.Pod).Name); ok {
+			//	//go exportDeletePod(gcmIP, dockerId)
+			//	fmt.Println("Deleting Docker id: " + dockerId)
+			//	m.Delete(obj.(*corev1.Pod).Name)
+			//} else {
+			//	fmt.Println("Failed to get dockerId from map! (" + obj.(*corev1.Pod).Name + ")")
+			//}
 			//go exportDeletePod(gcmIP, dockerId)
 		},
 	}, cache.Indexers{}) 
@@ -235,10 +292,12 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 	return controller
 }
 
-func handleNewPod(podObj *corev1.Pod, gcmIP string, clientset *kubernetes.Clientset) {
+func handleNewPod(podObj *corev1.Pod, ns string, gcmIP string, clientset *kubernetes.Clientset) {
+	fmt.Println("handleNewPod")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	for {
+		podObj, _ = clientset.CoreV1().Pods(ns).Get(context.TODO(), podObj.Name, metav1.GetOptions{})
 		out := podObj.Status.Phase
 		//fmt.Println(out)
 		if string(out) == "Running"{
@@ -264,6 +323,7 @@ func GetDockerId(podObj *corev1.Pod) string {
 
 //TODO: json file should have port
 func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId int32) {
+	fmt.Println("Export pod Spec")
 	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -315,7 +375,7 @@ func exportDeletePod(gcmIP string, dockerId string) {
 }
 
 func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, string) {
-	//todo: getpodfromname() and getDockerId() from agent into here (aka deployer) send over dockerid to agent for connectcontainer
+	fmt.Println("connect container req")
 	conn, err := grpc.Dial(agentIP + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
