@@ -3,11 +3,12 @@ option go_package = ".;ec.rpc";
 
 package ec.rpc;
 
-// The greeting service definition.
+// The greeting service definition. 
 service DeployerExport {
   // Sends a greeting
   rpc ReportPodSpec (ExportPodSpec) returns (PodSpecReply) {}
   rpc DeletePod (ExportDeletePod) returns (DeletePodReply) {}
+  rpc ReportAppSpec (ExportAppSpec) returns (AppSpecReply) {}
 }
 
 // The request message containing the user's name.
@@ -31,5 +32,20 @@ message ExportDeletePod {
 
 message DeletePodReply {
   string docker_id = 1;
+  string thanks = 4;
+}
+
+// The request message containing App Specs
+message ExportAppSpec {
+  string app_name = 1;
+  uint64 cpu_limit = 2;
+  uint64 mem_limit = 3;
+}
+
+// The AppSpecReply message containing confirmation of App Specs
+message AppSpecReply {
+  string app_name = 1;
+  uint64 cpu_Limit = 2;
+  uint64 mem_limit = 3;
   string thanks = 4;
 }
