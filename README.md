@@ -110,11 +110,8 @@
         Note: If you see the error: `fatal: could not read Username for 'https://github.com': terminal prompts disabled`, then you need to do the following to solve it:
         - `git config --global --add url."git@github.com:".insteadOf "https://github.com/"`
     - To clean up all pods in a namespace, delete the namespace via: `kubectl delete ns <namespace>`
-<<<<<<< HEAD
 
-=======
 -->
->>>>>>> master
 <!-- ## Setup Steps:
 1. Install Docker and Kubernetes and Go
 2. Instantiate a K8s cluster
