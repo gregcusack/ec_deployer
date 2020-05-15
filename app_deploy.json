@@ -3,8 +3,8 @@
     {
         "name": "app1",
         "specs": {
-                "mem": 500,
-                "cpu": 500,
+                "mem": 800,
+                "cpu": 2000,
                 "ports": 80,
                 "net": 10
         },
@@ -12,7 +12,7 @@
         "agentIPs": [
             "10.0.2.15"
         ],
-        "deploymentPath" : "/home/greg/Desktop/kub/test-sat/",
+        "deploymentPath" : "/home/greg/Desktop/kub/test/",
 	    "namespace": "media-microsvc"
     }]
 }
