@@ -352,6 +352,9 @@ func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, s
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Println("Rx back: ", r.GetPodName(), r.GetDockerID(), r.GetCgroupID())
+	if r.GetCgroupID() == -1 {
+		fmt.Println("ERROR IN SYSCONNECT. Rx back cgroupID: -1")
+	}
 	return r.GetCgroupID(), r.GetDockerID()
 
 }
