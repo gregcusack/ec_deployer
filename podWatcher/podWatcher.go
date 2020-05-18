@@ -257,6 +257,10 @@ func handleNewPod(podObj *corev1.Pod, ns string, gcmIP string, clientset *kubern
 		if string(out) == "Running"{
 			fmt.Printf("Pod Status: %s with name: %s\n", string(out), podObj.GetName())
 			nodeObj,_ := clientset.CoreV1().Nodes().Get(context.TODO(), podObj.Spec.NodeName, metav1.GetOptions{})
+			fmt.Println(nodeObj.Status.Addresses)
+			//nodeIPNew := []corev1.NodeAddress{}
+			//fmt.Println(nodeIPNew)
+			//nodeIPNew = nodeObj.Status.Addresses
 			nodeIP := nodeObj.Status.Addresses[0].Address
 
 			dockerId := GetDockerId(podObj)

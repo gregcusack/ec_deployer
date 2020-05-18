@@ -3,16 +3,17 @@
     {
         "name": "app1",
         "specs": {
-                "mem": 800,
-                "cpu": 3000,
-                "ports": 80,
-                "net": 10
+           "mem": 10000,
+           "cpu": 10000,
+           "ports": 80,
+           "net": 10
         },
-        "gcmIP": "10.0.2.15",
+        "gcmIP": "128.105.144.188",
         "agentIPs": [
-            "10.0.2.15"
+            "128.105.144.193",
+	    "128.105.144.194"
         ],
-        "deploymentPath" : "/home/greg/Desktop/kub/test/",
+        "deploymentPath" : "/users/gcusack/k8s-yaml/",
 	    "namespace": "media-microsvc"
     }]
 }
