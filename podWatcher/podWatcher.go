@@ -191,6 +191,8 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 	// whenever the cache is updated, the pod key is added sto the workqueue.
 	// Note that when we finally process the item from the workqueue, we might see a newer version
 	// of the Pod than the version which was responsible for triggering the update.
+	var wg sync.WaitGroup
+
 	indexer, informer := cache.NewIndexerInformer(podListWatcher, &corev1.Pod{}, 0, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(obj)
@@ -215,9 +217,11 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 				container := podNew.Status.ContainerStatuses[i]
 				if container.State.Waiting != nil && container.State.Waiting.Reason != "" {
 					fmt.Println(container.State.Waiting.Reason)
-					go handleNewPod(podNew, ns, gcmIP, clientset)
+					wg.Add(1)
+					go handleNewPod(&wg, podNew, ns, gcmIP, clientset)
 				}
 			}
+			wg.Wait()
 			if podOld.DeletionTimestamp != nil {
 				fmt.Println("Old Pod is terminating! name: " + podOld.GetName())
 				if dockerId, ok := m.Read(podOld.GetName()); ok {
@@ -228,7 +232,6 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 					fmt.Println("Failed to get dockerId from map! (" + podOld.GetName() + ")")
 				}
 			}
-
 		},
 		DeleteFunc: func(obj interface{}) {
 			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
@@ -246,9 +249,9 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 	return controller
 }
 
-func handleNewPod(podObj *corev1.Pod, ns string, gcmIP string, clientset *kubernetes.Clientset) {
+func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP string, clientset *kubernetes.Clientset) {
 	fmt.Println("handleNewPod")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	for {
 		podObj, _ = clientset.CoreV1().Pods(ns).Get(context.TODO(), podObj.Name, metav1.GetOptions{})
@@ -273,6 +276,7 @@ func handleNewPod(podObj *corev1.Pod, ns string, gcmIP string, clientset *kubern
 			break
 		}
 	}
+	wg.Done()
 }
 
 func GetDockerId(podObj *corev1.Pod) string {
@@ -298,7 +302,7 @@ func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId 
 
 	fmt.Println(txMsg)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	r, err := c.ReportPodSpec(ctx, txMsg)
@@ -323,7 +327,7 @@ func exportDeletePod(gcmIP string, dockerId string) {
 
 	fmt.Println(txMsg)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	r, err := c.DeletePod(ctx, txMsg)

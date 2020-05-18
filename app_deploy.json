@@ -3,17 +3,15 @@
     {
         "name": "app1",
         "specs": {
-           "mem": 10000,
-           "cpu": 10000,
-           "ports": 80,
-           "net": 10
+              "mem": 5000,
+              "cpu": 5000
         },
-        "gcmIP": "128.105.144.188",
-        "agentIPs": [
-            "128.105.144.193",
-	    "128.105.144.194"
-        ],
-        "deploymentPath" : "/users/gcusack/k8s-yaml/",
+        "gcmIP": "128.105.145.4",
+	"agentIPs": [
+		"128.105.144.241",
+		"128.105.144.253"
+	],
+        "deploymentPath" : "/mnt/ECKernel/DeathStarBench/mediaMicroservices/k8s-yaml/",
 	    "namespace": "media-microsvc"
     }]
 }
