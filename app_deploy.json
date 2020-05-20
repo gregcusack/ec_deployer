@@ -3,15 +3,14 @@
     {
         "name": "app1",
         "specs": {
-              "mem": 5000,
-              "cpu": 5000
+                "mem": 800,
+                "cpu": 2000
         },
-        "gcmIP": "128.105.145.4",
+        "gcmIP": "10.0.2.15",
 	"agentIPs": [
-		"128.105.144.241",
-		"128.105.144.253"
+		"10.0.2.15"
 	],
-        "deploymentPath" : "/mnt/ECKernel/DeathStarBench/mediaMicroservices/k8s-yaml/",
+        "deploymentPath" : "/home/greg/Desktop/kub/test/",
 	    "namespace": "media-microsvc"
     }]
 }
