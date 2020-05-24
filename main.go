@@ -159,7 +159,7 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 
 				for i := 0; i < len(originalDeployment.Spec.Template.Spec.Containers); i++ {
 					// fmt.Printf("Container Name: %s\n", originalDeployment.Spec.Template.Spec.Containers[i].Name)
-					contCpu := strconv.Itoa(int(cpuLimit/totalPods))+ "m"
+					contCpu := ""//strconv.Itoa(int(cpuLimit/totalPods))+ "m"
 					contMem := strconv.Itoa(int(memLimit/totalPods))+ "Mi"
 					fmt.Printf("Container limits: %s, %s \n", contCpu, contMem)
 					// First argument is the "requests" and the 2nd argument is "limits"
