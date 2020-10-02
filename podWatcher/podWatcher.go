@@ -251,7 +251,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 
 func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP string, clientset *kubernetes.Clientset) {
 	fmt.Println("handleNewPod")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	for {
 		podObj, _ = clientset.CoreV1().Pods(ns).Get(context.TODO(), podObj.Name, metav1.GetOptions{})
@@ -303,7 +303,7 @@ func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId 
 
 	fmt.Println(txMsg)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	r, err := c.ReportPodSpec(ctx, txMsg)
@@ -328,7 +328,7 @@ func exportDeletePod(gcmIP string, dockerId string) {
 
 	fmt.Println(txMsg)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	r, err := c.DeletePod(ctx, txMsg)
@@ -354,7 +354,7 @@ func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, s
 	}
 	fmt.Println(txMsg)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	r, err := c.ReqConnectContainer(ctx,txMsg)
 	if err != nil {
