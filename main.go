@@ -5,23 +5,23 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
-	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/gregcusack/ec_deployer/structs"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"k8s.io/apimachinery/pkg/api/resource"
 
 	// PodWatcher
 	"github.com/gregcusack/ec_deployer/podWatcher"
@@ -30,6 +30,7 @@ import (
 	"google.golang.org/grpc"
 )
 const GCM_GRPC_PORT = ":4447"
+const PERCENT_MEM_TO_ALLOC = 0.7
 
 func main() {
 	// First, we parse the application definition file for app statisitics
@@ -156,11 +157,13 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 				fmt.Printf("Found Deployment! \n")
 				deploymentsClient := clientset.AppsV1().Deployments(namespace)
 				originalDeployment := obj.(*appsv1.Deployment)
+				memToAlloc := int64(float64(memLimit) * PERCENT_MEM_TO_ALLOC)
+				fmt.Printf("Total Mem: %d, alloc mem: %d\n", memLimit, memToAlloc)
 
 				for i := 0; i < len(originalDeployment.Spec.Template.Spec.Containers); i++ {
 					// fmt.Printf("Container Name: %s\n", originalDeployment.Spec.Template.Spec.Containers[i].Name)
 					contCpu := strconv.Itoa(int(cpuLimit/totalPods))+ "m"
-					contMem := strconv.Itoa(int(memLimit/totalPods))+ "Mi"
+					contMem := strconv.Itoa(int(memToAlloc/int64(totalPods)))+ "Mi"
 					fmt.Printf("Container limits: %s, %s \n", contCpu, contMem)
 					// First argument is the "requests" and the 2nd argument is "limits"
 					resReq := getResourceRequirements(getResourceList(contCpu, "0Mi"), getResourceList(contCpu, contMem))

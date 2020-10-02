@@ -265,6 +265,7 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 			//fmt.Println(nodeIPNew)
 			//nodeIPNew = nodeObj.Status.Addresses
 			nodeIP := nodeObj.Status.Addresses[0].Address
+			fmt.Println("handleNewPod NodeIP: " + nodeIP)
 
 			dockerId := GetDockerId(podObj)
 
@@ -286,7 +287,7 @@ func GetDockerId(podObj *corev1.Pod) string {
 
 //TODO: json file should have port
 func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId int32) {
-	fmt.Println("Export pod Spec")
+	fmt.Println("Export pod Spec from cgID: " + string(cgroupId))
 	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
