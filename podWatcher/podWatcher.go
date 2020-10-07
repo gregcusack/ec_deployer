@@ -204,6 +204,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			fmt.Printf("Add for Pod %s: +\n", obj.(*corev1.Pod).GetName())
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
+			fmt.Println("updateFunc for old pod: " + old.(*corev1.Pod).GetName() + ", new pod: " + new.(*corev1.Pod).GetName())
 			key, err := cache.MetaNamespaceKeyFunc(new)
 			if err == nil  {
 				queue.Add(key)
