@@ -12,6 +12,7 @@ import (
 	"log"
 	"sync"
 	"time"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -288,7 +289,7 @@ func GetDockerId(podObj *corev1.Pod) string {
 
 //TODO: json file should have port
 func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId int32) {
-	fmt.Println("Export pod Spec from cgID: " + string(cgroupId))
+	fmt.Println("Export pod Spec from cgID: " + strconv.Itoa(int(cgroupId)))
 	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
