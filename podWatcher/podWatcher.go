@@ -274,7 +274,9 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 
 			m.Insert(podObj.GetName(), dockerId)
 			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId)
-			exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)			
+			if cgId != 0 {
+				exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)
+			}
 			break
 		} else if ctx.Err() != nil {
 			break
