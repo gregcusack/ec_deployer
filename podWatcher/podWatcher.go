@@ -225,7 +225,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 				}
 			}
 			wg.Wait()
-			if podOld.DeletionTimestamp != nil {
+			if podOld.DeletionTimestamp != nil || string(podNew.Status.Phase) == "Failed" {
 				fmt.Println("Old Pod is terminating! name: " + podOld.GetName())
 				if dockerId, ok := m.Read(podOld.GetName()); ok {
 					go exportDeletePod(gcmIP, dockerId)
