@@ -12,6 +12,7 @@ import (
 	"log"
 	"sync"
 	"time"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -204,6 +205,8 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			fmt.Printf("Add for Pod %s: +\n", obj.(*corev1.Pod).GetName())
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
+			fmt.Println("updateFunc for old pod: " + old.(*corev1.Pod).GetName() + ", new pod: " + new.(*corev1.Pod).GetName())
+			fmt.Println("updateFunc podStatus for old pod: " + string(old.(*corev1.Pod).Status.Phase) + ", new pod: " + string(new.(*corev1.Pod).Status.Phase))
 			key, err := cache.MetaNamespaceKeyFunc(new)
 			if err == nil  {
 				queue.Add(key)
@@ -222,7 +225,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 				}
 			}
 			wg.Wait()
-			if podOld.DeletionTimestamp != nil {
+			if podOld.DeletionTimestamp != nil || string(podNew.Status.Phase) == "Failed" {
 				fmt.Println("Old Pod is terminating! name: " + podOld.GetName())
 				if dockerId, ok := m.Read(podOld.GetName()); ok {
 					go exportDeletePod(gcmIP, dockerId)
@@ -271,7 +274,9 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 
 			m.Insert(podObj.GetName(), dockerId)
 			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId)
-			exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)			
+			if cgId != 0 {
+				exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)
+			}
 			break
 		} else if ctx.Err() != nil {
 			break
@@ -287,7 +292,7 @@ func GetDockerId(podObj *corev1.Pod) string {
 
 //TODO: json file should have port
 func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId int32) {
-	fmt.Println("Export pod Spec from cgID: " + string(cgroupId))
+	fmt.Println("Export pod Spec from cgID: " + strconv.Itoa(int(cgroupId)))
 	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
