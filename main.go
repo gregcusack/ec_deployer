@@ -62,6 +62,9 @@ func main() {
 	fmt.Printf("[DBG] Configuring K8s ClientSet\n")
 	clientset := configK8()
 
+	fmt.Println("WHATUP BOUIIIII")
+
+
 	// For multiple applications
 	for _, appDef := range dcDefs.DCDefs {
 		
@@ -100,6 +103,8 @@ func main() {
 		}
 
 	}
+
+
 
 	
 	select {}

@@ -273,7 +273,7 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 			dockerId := GetDockerId(podObj)
 
 			m.Insert(podObj.GetName(), dockerId)
-			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId)
+			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, string(podObj.UID), dockerId)
 			if cgId != 0 {
 				exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)
 			}
@@ -343,7 +343,7 @@ func exportDeletePod(gcmIP string, dockerId string) {
 	log.Println("Rx back from gcm: ", r.GetDockerId(), r.GetThanks())
 }
 
-func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, string) {
+func connectContainerRequest(agentIP, gcmIP, podName, podUid, dockerId string) (int32, string) {
 	fmt.Println("connect container req")
 	conn, err := grpc.Dial(agentIP + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -355,6 +355,7 @@ func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, s
 	txMsg := &pb.ConnectContainerRequest{
 		GcmIP: gcmIP,
 		PodName: podName,
+		PodUid: podUid,
 		DockerId: dockerId,
 	}
 	fmt.Println(txMsg)
