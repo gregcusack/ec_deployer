@@ -1,17 +1,17 @@
 {
-    "DC-def": [
+  "DC-def": [
     {
-        "name": "app1",
-        "specs": {
-              "mem": 5000,
-              "cpu": 5000
-        },
-        "gcmIP": "128.105.145.4",
-	"agentIPs": [
-		"128.105.144.241",
-		"128.105.144.253"
-	],
-        "deploymentPath" : "/mnt/ECKernel/DeathStarBench/mediaMicroservices/k8s-yaml/",
-	    "namespace": "media-microsvc"
-    }]
+      "name": "app1",
+      "specs": {
+        "mem": 1000,
+        "cpu": 1000
+      },
+      "gcmIP": "10.0.2.15",
+      "agentIPs": [
+        "10.0.2.15"
+      ],
+      "deploymentPath" : "/home/greg/Desktop/kub/app1/",
+      "namespace": "ns-app1"
+    }
+  ]
 }

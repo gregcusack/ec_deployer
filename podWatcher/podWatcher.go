@@ -39,6 +39,32 @@ const AGENT_GRPC_PORT = ":4446"
 const GCM_GRPC_PORT = ":4447"
 const BUFFSIZE = 2048
 
+var nsToAppNumMap = make(map[string]int32)
+
+//type nsToAppNumMap struct {
+//	sync.RWMutex
+//	internal map[string]int
+//}
+//
+//func (nsMap *nsToAppNumMap) Read(key string) (int, bool) {
+//	nsMap.RLock()
+//	result, ok := nsMap.internal[key]
+//	nsMap.RUnlock()
+//	return result, ok
+//}
+//
+//func (nsMap *nsToAppNumMap) Insert(key string, value int) {
+//	nsMap.Lock()
+//	nsMap.internal[key] = value
+//	nsMap.Unlock()
+//}
+//
+//func (nsMap *nsToAppNumMap) Delete(key string) {
+//	nsMap.Lock()
+//	delete(nsMap.internal, key)
+//	nsMap.Unlock()
+//}
+
 type podNameToDockerIdMap struct {
 	sync.RWMutex
 	internal map[string]string
@@ -70,6 +96,7 @@ type Controller struct {
 }
 
 var m *podNameToDockerIdMap
+//var nsMap *nsToAppNumMap
 
 func NewController(queue workqueue.RateLimitingInterface, indexer cache.Indexer, informer cache.Controller) *Controller {
 	return &Controller{
@@ -145,8 +172,11 @@ func (c *Controller) handleErr(err error, key interface{}) {
 	klog.Infof("Dropping pod %q out of the queue: %v", key, err)
 }
 
-func (c *Controller) Run(threadiness int, stopCh chan struct{}) {
-	initMap()
+func (c *Controller) Run(threadiness int, stopCh chan struct{}, namespace string, appCount int32) {
+	initPodToDockerMap()
+	//initNamespacetoAppNumMap()
+	nsToAppNumMap[namespace] = appCount
+
 	defer runtime.HandleCrash()
 
 	// Let the workers stop when we are done
@@ -174,9 +204,13 @@ func (c *Controller) runWorker() {
 	}
 }
 
-func initMap() {
+func initPodToDockerMap() {
 	m = &podNameToDockerIdMap{internal: map[string]string{}}
 }
+
+//func initNamespacetoAppNumMap() {
+//	nsMap = &nsToAppNumMap{internal: map[string]int{}}
+//}
 
 func ListWatcher(namespace string, clientset *kubernetes.Clientset) *cache.ListWatch {
 	return cache.NewListWatchFromClient(clientset.CoreV1().RESTClient(), "pods", namespace, fields.Everything())
@@ -185,7 +219,6 @@ func ListWatcher(namespace string, clientset *kubernetes.Clientset) *cache.ListW
 func CreateQueue() workqueue.RateLimitingInterface {
 	return workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 }
-
 
 func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingInterface, gcmIP string, clientset *kubernetes.Clientset) *Controller {
 	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
@@ -202,9 +235,10 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			}
 			// This is where we'd want the GRPC call for calling sysconnect on new pods would be (I think.. because it would handle pods being created and spun)
 			// Get Docker ID
-			fmt.Printf("Add for Pod %s: +\n", obj.(*corev1.Pod).GetName())
+			fmt.Println("Addding pod: " +  obj.(*corev1.Pod).GetName())
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
+			fmt.Println("###############")
 			fmt.Println("updateFunc for old pod: " + old.(*corev1.Pod).GetName() + ", new pod: " + new.(*corev1.Pod).GetName())
 			fmt.Println("updateFunc podStatus for old pod: " + string(old.(*corev1.Pod).Status.Phase) + ", new pod: " + string(new.(*corev1.Pod).Status.Phase))
 			key, err := cache.MetaNamespaceKeyFunc(new)
@@ -212,14 +246,12 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 				queue.Add(key)
 			}
 			ns, _, _ := cache.SplitMetaNamespaceKey(key)
-			fmt.Println(ns)
 			podNew := new.(*corev1.Pod)
 			podOld := old.(*corev1.Pod)
-			fmt.Println("###############")
 			for i := range podNew.Status.ContainerStatuses {
 				container := podNew.Status.ContainerStatuses[i]
 				if container.State.Waiting != nil && container.State.Waiting.Reason != "" {
-					fmt.Println(container.State.Waiting.Reason)
+					fmt.Println("update pod. waiting status: " + container.State.Waiting.Reason)
 					wg.Add(1)
 					go handleNewPod(&wg, podNew, ns, gcmIP, clientset)
 				}
@@ -235,11 +267,12 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 					fmt.Println("Failed to get dockerId from map! (" + podOld.GetName() + ")")
 				}
 			}
+			fmt.Println("leaving updatefunc()")
 		},
 		DeleteFunc: func(obj interface{}) {
 			// IndexerInformer uses a delta queue, therefore for deletes we have to use this
 			// key function.
-			fmt.Printf("Delete for Pod %s\n", obj.(*corev1.Pod).GetName())
+			fmt.Println("Delete Pod: " +  obj.(*corev1.Pod).GetName())
 			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 			if err == nil {
 				queue.Add(key)
@@ -253,7 +286,7 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 }
 
 func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP string, clientset *kubernetes.Clientset) {
-	fmt.Println("handleNewPod")
+	fmt.Println("handleNewPod(). pod: " + podObj.GetName())
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	for {
@@ -263,7 +296,7 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 		if string(out) == "Running"{
 			fmt.Printf("Pod Status: %s with name: %s\n", string(out), podObj.GetName())
 			nodeObj,_ := clientset.CoreV1().Nodes().Get(context.TODO(), podObj.Spec.NodeName, metav1.GetOptions{})
-			fmt.Println(nodeObj.Status.Addresses)
+			fmt.Println("Pod deployed on: " + nodeObj.Status.Addresses[0].Address)
 			//nodeIPNew := []corev1.NodeAddress{}
 			//fmt.Println(nodeIPNew)
 			//nodeIPNew = nodeObj.Status.Addresses
@@ -271,9 +304,14 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 			fmt.Println("handleNewPod NodeIP: " + nodeIP)
 
 			dockerId := GetDockerId(podObj)
-
 			m.Insert(podObj.GetName(), dockerId)
-			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId)
+
+			appNum, ok := nsToAppNumMap[ns] //get the appNum from the namespace
+			if !ok {
+				fmt.Println("Failed to get App Num from ns! ns: " + ns)
+			}
+
+			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId, appNum)
 			if cgId != 0 {
 				exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)
 			}
@@ -286,8 +324,11 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 }
 
 func GetDockerId(podObj *corev1.Pod) string {
-	// This returns the first container manually 
-	return podObj.Status.ContainerStatuses[0].ContainerID[9:]
+	// This returns the first container manually
+	//TODO: there is a bug here! will crash if docker id does not exist or something. so have to wait for it to exist
+	dockID := podObj.Status.ContainerStatuses[0].ContainerID[9:]
+	fmt.Println("dockID on deploy: " + dockID)
+	return dockID
 }
 
 //TODO: json file should have port
@@ -343,7 +384,7 @@ func exportDeletePod(gcmIP string, dockerId string) {
 	log.Println("Rx back from gcm: ", r.GetDockerId(), r.GetThanks())
 }
 
-func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, string) {
+func connectContainerRequest(agentIP, gcmIP, podName, dockerId string, appNum int32) (int32, string) {
 	fmt.Println("connect container req")
 	conn, err := grpc.Dial(agentIP + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -356,8 +397,9 @@ func connectContainerRequest(agentIP, gcmIP, podName, dockerId string) (int32, s
 		GcmIP: gcmIP,
 		PodName: podName,
 		DockerId: dockerId,
+		AppNum: appNum,
 	}
-	fmt.Println(txMsg)
+	fmt.Println("txMsg to agent -> gcmIP: " + txMsg.GcmIP + ", podname: " + txMsg.PodName + ", dockId: " + txMsg.DockerId)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
