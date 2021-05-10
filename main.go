@@ -32,6 +32,7 @@ import (
 //const GCM_GRPC_PORT_1 = ":4447"
 //const GCM_GRPC_PORT_2 = ":4448"
 const PERCENT_MEM_TO_ALLOC = 0.7
+var BaseGcmGrpcPort = 4447 //app1 gets 4447, app2 gets 4448, ..., appN gets 4447 + appN - 1
 
 func main() {
 	// First, we parse the application definition file for app statisitics
