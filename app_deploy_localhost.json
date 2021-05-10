@@ -1,0 +1,18 @@
+{
+  "DC-def": [
+    {
+        "name": "app1",
+        "specs": {
+              "mem": 2000,
+              "cpu": 1000
+        },
+        "gcmIP": "10.0.2.15",
+	"agentIPs": [
+		"10.0.2.15"
+	],
+        "deploymentPath" : "/home/greg/Desktop/kub/test/",
+	    "namespace": "media-microsvc"
+    }
+  ]
+}
+
