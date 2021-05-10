@@ -37,6 +37,7 @@ import (
 
 const AGENT_GRPC_PORT = ":4446"
 const GCM_GRPC_PORT = ":4447"
+var BaseGcmGrpcPort = 4447 //app1 gets 4447, app2 gets 4448, ..., appN gets 4447 + appN - 1
 const BUFFSIZE = 2048
 
 var nsToAppNumMap = make(map[string]int32)
@@ -313,7 +314,7 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 
 			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId, appNum)
 			if cgId != 0 {
-				exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId)
+				exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
 			}
 			break
 		} else if ctx.Err() != nil {
@@ -332,9 +333,11 @@ func GetDockerId(podObj *corev1.Pod) string {
 }
 
 //TODO: json file should have port
-func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId int32) {
+func exportDeployPodSpec(nodeIP string, gcmIP string, dockerID string, cgroupId int32, appCount int32) {
 	fmt.Println("Export pod Spec from cgID: " + strconv.Itoa(int(cgroupId)))
-	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+	var gcm_addr = gcmIP + ":" + strconv.Itoa(BaseGcmGrpcPort + (int(appCount) - 1))
+	//conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial( gcm_addr, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

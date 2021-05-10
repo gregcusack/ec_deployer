@@ -29,7 +29,6 @@ import (
 	dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
 	"google.golang.org/grpc"
 )
-var BaseGcmGrpcPort = 4447 //app1 gets 4447, app2 gets 4448, ..., appN gets 4447 + appN - 1
 //const GCM_GRPC_PORT_1 = ":4447"
 //const GCM_GRPC_PORT_2 = ":4448"
 const PERCENT_MEM_TO_ALLOC = 0.7
