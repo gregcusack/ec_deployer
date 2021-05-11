@@ -1,0 +1,49 @@
+{
+  "DC-def": [
+    {
+        "name": "app1",
+        "specs": {
+              "mem": 20000,
+              "cpu": 21000
+        },
+        "gcmIP": "192.168.6.10",
+	"agentIPs": [
+		"192.168.6.7",
+		"192.168.6.8",
+		"192.168.6.9"
+	],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/DeathStarBench/mediaMicroservices/k8s-yaml-1/",
+	    "namespace": "media-microsvc-1"
+    },
+    {
+        "name": "app2",
+        "specs": {
+              "mem": 21000,
+              "cpu": 20000
+        },
+        "gcmIP": "192.168.6.10",
+        "agentIPs": [
+                "192.168.6.7",
+                "192.168.6.8",
+                "192.168.6.9"
+        ],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/DeathStarBench/mediaMicroservices/k8s-yaml-2/",
+            "namespace": "media-microsvc-2"
+    },
+    {
+        "name": "app3",
+        "specs": {
+              "mem": 22000,
+              "cpu": 20000
+        },
+        "gcmIP": "192.168.6.10",
+        "agentIPs": [
+                "192.168.6.7",
+                "192.168.6.8",
+                "192.168.6.9"
+        ],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/DeathStarBench/mediaMicroservices/k8s-yaml-3/",
+            "namespace": "media-microsvc-3"
+    }
+  ]
+}

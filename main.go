@@ -29,8 +29,10 @@ import (
 	dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
 	"google.golang.org/grpc"
 )
-const GCM_GRPC_PORT = ":4447"
+//const GCM_GRPC_PORT_1 = ":4447"
+//const GCM_GRPC_PORT_2 = ":4448"
 const PERCENT_MEM_TO_ALLOC = 0.7
+var BaseGcmGrpcPort = 4447 //app1 gets 4447, app2 gets 4448, ..., appN gets 4447 + appN - 1
 
 func main() {
 	// First, we parse the application definition file for app statisitics
@@ -59,8 +61,10 @@ func main() {
 		log.Println("Error reading json file: " + err.Error())
 	}
 
-	fmt.Printf("[DBG] Configuring K8s ClientSet\n")
+	fmt.Println("[DBG] Configuring K8s ClientSet")
 	clientset := configK8()
+
+	var appCount int32 = 1
 
 	// For multiple applications
 	for _, appDef := range dcDefs.DCDefs {
@@ -78,11 +82,12 @@ func main() {
 			os.Exit(1)
 		}
 	
-		fmt.Printf("AppName: %s, agent IP: %s, gcmIP: %s, deploymentPath: %s \n", appName, agentIPs, gcmIP, deploymentPath)
+		fmt.Printf("Namespace: %s, AppName: %s, agent IP: %s, gcmIP: %s, deploymentPath: %s \n",
+			namespace, appName, agentIPs, gcmIP, deploymentPath)
 	
 	
 		// Add a Pod watcher/listener here for pods added to the namespace
-		fmt.Printf("[DBG] Adding a Pod watcher Thread for namespace: %s\n", namespace)
+		fmt.Println("[DBG] Adding a Pod watcher Thread for namespace: " + namespace)
 		podListWatcher := podWatcher.ListWatcher(namespace, clientset)
 		queue := podWatcher.CreateQueue()
 	
@@ -90,14 +95,15 @@ func main() {
 		// Now let's start the controller on a seperate thread
 		stop := make(chan struct{})
 		defer close(stop)
-		go controller.Run(1, stop)
+		go controller.Run(1, stop, namespace, appCount)
 		
 		// Deploy the Application nominally - as it would be via `kubectl apply -f` and get the container names of all pods in the application
-		fmt.Printf("[DBG] Deploying Application %s here  \n", appName)
-		err := deployer(appName, gcmIP, deploymentPath, namespace, cpuLimit, memLimit, clientset)
+		fmt.Printf("[DBG] Deploying Application: " + appName)
+		err := deployer(appName, gcmIP, deploymentPath, namespace, cpuLimit, memLimit, clientset, appCount)
 		if err != nil {
 			fmt.Printf("Error in parsing through deployment")
 		}
+		appCount = appCount + 1
 
 	}
 
@@ -105,7 +111,7 @@ func main() {
 	select {}
 }
 
-func deployer(appName string, gcmIP string, deploymentPath string, namespace string, cpuLimit int, memLimit int, clientset *kubernetes.Clientset) (error) {
+func deployer(appName string, gcmIP string, deploymentPath string, namespace string, cpuLimit int, memLimit int, clientset *kubernetes.Clientset, appCount int32) (error) {
 	fmt.Printf("Reading Directory: %s\n", deploymentPath)
 	files, err := ioutil.ReadDir(deploymentPath)
 	if err != nil {
@@ -116,7 +122,7 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 
 
 	/* Step 1. Tell GCM the application limits via GRPC request */
-	sendAppSpecs(gcmIP, appName, cpuLimit, memLimit)	
+	sendAppSpecs(gcmIP, appName, cpuLimit, memLimit, appCount)
 	fmt.Println("Sent App specs to GCM. Press Enter to continue Deployment")
     fmt.Scanln() // wait for Enter Key
 
@@ -154,7 +160,7 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 			
 			switch groupVersionKind.Kind {
 			case "Deployment":
-				fmt.Printf("Found Deployment! \n")
+				//fmt.Printf("Found Deployment! \n")
 				deploymentsClient := clientset.AppsV1().Deployments(namespace)
 				originalDeployment := obj.(*appsv1.Deployment)
 				memToAlloc := int64(float64(memLimit) * PERCENT_MEM_TO_ALLOC)
@@ -198,8 +204,9 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 	return nil
 }
 
-func sendAppSpecs(gcmIP string, appName string, cpuLimit int, memLimit int) {
-	conn, err := grpc.Dial( gcmIP + GCM_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+func sendAppSpecs(gcmIP string, appName string, cpuLimit int, memLimit int, appCount int32) {
+	var gcm_port = ":" + strconv.Itoa(BaseGcmGrpcPort + (int(appCount) - 1))
+	conn, err := grpc.Dial( gcmIP +gcm_port, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
