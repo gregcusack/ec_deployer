@@ -7,6 +7,7 @@
 package podWatcher
 
 import (
+	"container/list"
 	"context"
 	"fmt"
 	"log"
@@ -393,5 +394,37 @@ func connectContainerRequest(agentIP, gcmIP, podName, dockerId string, appNum in
 		fmt.Println("ERROR IN SYSCONNECT. Rx back cgroupID: -1")
 	}
 	return r.GetCgroupID(), r.GetDockerID()
+
+}
+
+func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, appCount int32) []string {
+	fmt.Println("sendNamespaceToAgent()")
+	var returnStatuses []int
+
+	for _, agent_ip := range agentIPs {
+		conn, err := grpc.Dial(agent_ip + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+		c := pb.NewHandlerClient(conn)
+
+		txMsg := &pb.TriggerPodDeploymentWatcherRequest{
+			GcmIP:     gcmIP,
+			Namespace: namespace,
+			AppCount:  appCount,
+		}
+		fmt.Println("txMsg to agent -> gcmIP: " + txMsg.GcmIP + ", namespace: " + txMsg.Namespace + ", appCount: " + string(txMsg.AppCount))
+
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancel()
+		r, err := c.ReqTriggerAgentWatcher(ctx, txMsg)
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		log.Println("Rx back: ", r.ReturnStatus())
+		if r.ReturnStatus() != 0 {
+			fmt.Println("ERROR IN TriggerAgentWatcher for app: " + string(appCount) + ". Rx back returnStatus: " + string(r.ReturnStatus()))
+		}
+		returnStatuses = append(returnStatuses, r.ReturnStatus())
+	}
+	return r.ReturnStatus()
+
 
 }

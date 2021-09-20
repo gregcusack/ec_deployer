@@ -97,7 +97,7 @@ func main() {
 		stop := make(chan struct{})
 		defer close(stop)
 		go controller.Run(1, stop, namespace, appCount)
-		pb.
+		go podWatcher.SendNamespaceToAgent(gcmIP, agentIPs, namespace, appCount)
 
 		// Deploy the Application nominally - as it would be via `kubectl apply -f` and get the container names of all pods in the application
 		fmt.Printf("[DBG] Deploying Application: " + appName)
