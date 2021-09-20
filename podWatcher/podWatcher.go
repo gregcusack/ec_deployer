@@ -409,7 +409,7 @@ func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, app
 			Namespace: namespace,
 			AppCount:  appCount,
 		}
-		fmt.Println("txMsg to agent -> gcmIP: " + txMsg.GcmIP + ", namespace: " + txMsg.Namespace + ", appCount: " + strconv.Itoa(txMsg.AppCount))
+		fmt.Println("txMsg to agent -> gcmIP: " + txMsg.GcmIP + ", namespace: " + txMsg.Namespace + ", appCount: " + strconv.Itoa(int(txMsg.AppCount)))
 
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
@@ -419,7 +419,7 @@ func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, app
 		}
 		log.Println("Rx back: ", r.GetReturnStatus())
 		if r.GetReturnStatus() != 0 {
-			fmt.Println("ERROR IN TriggerAgentWatcher for app: " + strconv.Itoa(appCount) + ". Rx back returnStatus: " + string(r.GetReturnStatus()))
+			fmt.Println("ERROR IN TriggerAgentWatcher for app: " + strconv.Itoa(int(appCount)) + ". Rx back returnStatus: " + string(r.GetReturnStatus()))
 		}
 		returnStatuses = append(returnStatuses, r.GetReturnStatus())
 	}
