@@ -27,6 +27,7 @@ import (
 	"github.com/gregcusack/ec_deployer/podWatcher"
 
 	dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
+	pb "github.com/Maziyar-Na/EC-Agent/grpc"
 	"google.golang.org/grpc"
 )
 //const GCM_GRPC_PORT_1 = ":4447"
@@ -96,7 +97,8 @@ func main() {
 		stop := make(chan struct{})
 		defer close(stop)
 		go controller.Run(1, stop, namespace, appCount)
-		
+		pb.
+
 		// Deploy the Application nominally - as it would be via `kubectl apply -f` and get the container names of all pods in the application
 		fmt.Printf("[DBG] Deploying Application: " + appName)
 		err := deployer(appName, gcmIP, deploymentPath, namespace, cpuLimit, memLimit, clientset, appCount)

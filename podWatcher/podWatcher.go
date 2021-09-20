@@ -40,31 +40,9 @@ const GCM_GRPC_PORT = ":4447"
 var BaseGcmGrpcPort = 4447 //app1 gets 4447, app2 gets 4448, ..., appN gets 4447 + appN - 1
 const BUFFSIZE = 2048
 
+//keeps track of the number of applications being deployed
+//Only relevant for multitenancy
 var nsToAppNumMap = make(map[string]int32)
-
-//type nsToAppNumMap struct {
-//	sync.RWMutex
-//	internal map[string]int
-//}
-//
-//func (nsMap *nsToAppNumMap) Read(key string) (int, bool) {
-//	nsMap.RLock()
-//	result, ok := nsMap.internal[key]
-//	nsMap.RUnlock()
-//	return result, ok
-//}
-//
-//func (nsMap *nsToAppNumMap) Insert(key string, value int) {
-//	nsMap.Lock()
-//	nsMap.internal[key] = value
-//	nsMap.Unlock()
-//}
-//
-//func (nsMap *nsToAppNumMap) Delete(key string) {
-//	nsMap.Lock()
-//	delete(nsMap.internal, key)
-//	nsMap.Unlock()
-//}
 
 type podNameToDockerIdMap struct {
 	sync.RWMutex
