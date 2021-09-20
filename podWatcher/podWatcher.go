@@ -396,7 +396,7 @@ func connectContainerRequest(agentIP, gcmIP, podName, dockerId string, appNum in
 
 }
 
-func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, appCount int32) []string {
+func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, appCount int32) []int32 {
 	fmt.Println("sendNamespaceToAgent()")
 	var returnStatuses []int32
 
@@ -423,7 +423,7 @@ func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, app
 		}
 		returnStatuses = append(returnStatuses, r.GetReturnStatus())
 	}
-	return r.ReturnStatus()
+	return returnStatuses
 
 
 }
