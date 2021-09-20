@@ -398,7 +398,7 @@ func connectContainerRequest(agentIP, gcmIP, podName, dockerId string, appNum in
 
 func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, appCount int32) []string {
 	fmt.Println("sendNamespaceToAgent()")
-	var returnStatuses []int
+	var returnStatuses []int32
 
 	for _, agent_ip := range agentIPs {
 		conn, err := grpc.Dial(agent_ip + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
