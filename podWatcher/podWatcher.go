@@ -7,7 +7,6 @@
 package podWatcher
 
 import (
-	"container/list"
 	"context"
 	"fmt"
 	"log"
@@ -418,11 +417,11 @@ func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, app
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Println("Rx back: ", r.ReturnStatus())
-		if r.ReturnStatus() != 0 {
-			fmt.Println("ERROR IN TriggerAgentWatcher for app: " + string(appCount) + ". Rx back returnStatus: " + string(r.ReturnStatus()))
+		log.Println("Rx back: ", r.GetReturnStatus())
+		if r.GetReturnStatus() != 0 {
+			fmt.Println("ERROR IN TriggerAgentWatcher for app: " + string(appCount) + ". Rx back returnStatus: " + string(r.GetReturnStatus()))
 		}
-		returnStatuses = append(returnStatuses, r.ReturnStatus())
+		returnStatuses = append(returnStatuses, r.GetReturnStatus())
 	}
 	return r.ReturnStatus()
 
