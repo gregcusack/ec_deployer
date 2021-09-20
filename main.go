@@ -27,7 +27,6 @@ import (
 	"github.com/gregcusack/ec_deployer/podWatcher"
 
 	dgrpc "github.com/gregcusack/ec_deployer/DeployServerGRPC"
-	pb "github.com/Maziyar-Na/EC-Agent/grpc"
 	"google.golang.org/grpc"
 )
 //const GCM_GRPC_PORT_1 = ":4447"
