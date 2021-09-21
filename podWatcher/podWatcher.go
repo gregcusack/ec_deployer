@@ -295,7 +295,7 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 			//if cgId != 0 {
 			//	exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
 			//}
-			exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
+			exportDeployPodSpec(nodeIP, gcmIP, dockerId, cgId, appNum)
 			break
 		} else if ctx.Err() != nil {
 			break
@@ -407,9 +407,10 @@ func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, app
 		c := pb.NewHandlerClient(conn)
 
 		txMsg := &pb.TriggerPodDeploymentWatcherRequest{
-			GcmIP:     gcmIP,
-			Namespace: namespace,
-			AppCount:  appCount,
+			GcmIP:     	gcmIP,
+			AgentIP:	agent_ip,
+			Namespace: 	namespace,
+			AppCount:  	appCount,
 		}
 		fmt.Println("txMsg to agent -> gcmIP: " + txMsg.GcmIP + ", namespace: " + txMsg.Namespace + ", appCount: " + strconv.Itoa(int(txMsg.AppCount)))
 
