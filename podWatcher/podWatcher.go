@@ -295,7 +295,7 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 			//if cgId != 0 {
 			//	exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
 			//}
-			exportDeployPodSpec(nodeIP, gcmIP, dockerId, cgId, appNum)
+			//exportDeployPodSpec(nodeIP, gcmIP, dockerId, cgId, appNum)
 			break
 		} else if ctx.Err() != nil {
 			break
