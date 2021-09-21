@@ -285,10 +285,10 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 			dockerId := GetDockerId(podObj)
 			m.Insert(podObj.GetName(), dockerId)
 
-			appNum, ok := nsToAppNumMap[ns] //get the appNum from the namespace
-			if !ok {
-				fmt.Println("Failed to get App Num from ns! ns: " + ns)
-			}
+			//appNum, ok := nsToAppNumMap[ns] //get the appNum from the namespace
+			//if !ok {
+			//	fmt.Println("Failed to get App Num from ns! ns: " + ns)
+			//}
 
 			//TODO: this needs to be called by agent maybe. makes things much more complicated though
 			//cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId, appNum)
