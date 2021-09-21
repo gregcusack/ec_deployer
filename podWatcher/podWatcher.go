@@ -290,10 +290,12 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 				fmt.Println("Failed to get App Num from ns! ns: " + ns)
 			}
 
-			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId, appNum)
-			if cgId != 0 {
-				exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
-			}
+			//TODO: this needs to be called by agent maybe. makes things much more complicated though
+			//cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId, appNum)
+			//if cgId != 0 {
+			//	exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
+			//}
+			exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
 			break
 		} else if ctx.Err() != nil {
 			break
