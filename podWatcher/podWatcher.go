@@ -74,7 +74,7 @@ type Controller struct {
 	informer cache.Controller
 }
 
-var m *podNameToDockerIdMap
+var podNameToDockMap *podNameToDockerIdMap
 //var nsMap *nsToAppNumMap
 
 func NewController(queue workqueue.RateLimitingInterface, indexer cache.Indexer, informer cache.Controller) *Controller {
@@ -184,7 +184,7 @@ func (c *Controller) runWorker() {
 }
 
 func initPodToDockerMap() {
-	m = &podNameToDockerIdMap{internal: map[string]string{}}
+	podNameToDockMap = &podNameToDockerIdMap{internal: map[string]string{}}
 }
 
 //func initNamespacetoAppNumMap() {
@@ -238,10 +238,10 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			wg.Wait()
 			if podOld.DeletionTimestamp != nil || string(podNew.Status.Phase) == "Failed" {
 				fmt.Println("Old Pod is terminating! name: " + podOld.GetName())
-				if dockerId, ok := m.Read(podOld.GetName()); ok {
+				if dockerId, ok := podNameToDockMap.Read(podOld.GetName()); ok {
 					go exportDeletePod(gcmIP, dockerId)
 					fmt.Println("Deleting Docker id: " + dockerId)
-					m.Delete(podOld.GetName())
+					podNameToDockMap.Delete(podOld.GetName())
 				} else {
 					fmt.Println("Failed to get dockerId from map! (" + podOld.GetName() + ")")
 				}
@@ -283,7 +283,7 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 			fmt.Println("handleNewPod NodeIP: " + nodeIP)
 
 			dockerId := GetDockerId(podObj)
-			m.Insert(podObj.GetName(), dockerId)
+			podNameToDockMap.Insert(podObj.GetName(), dockerId)
 
 			//appNum, ok := nsToAppNumMap[ns] //get the appNum from the namespace
 			//if !ok {
