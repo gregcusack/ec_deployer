@@ -258,6 +258,7 @@ func getNumPods(deploymentPath string, namespace string, files []os.FileInfo, cl
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	for _, item := range files {
 		filePath := fmt.Sprintf("%v", deploymentPath) + item.Name()
+		fmt.Println("file path: " + filePath)
 		yamlFile, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			fmt.Printf("Error in reading file: %s, Error: %s\n", filePath, err)
