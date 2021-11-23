@@ -281,6 +281,9 @@ func getNumPods(deploymentPath string, namespace string, files []os.FileInfo, cl
 			switch groupVersionKind.Kind {
 			case "Deployment":
 				originalDeployment := obj.(*appsv1.Deployment)
+				if originalDeployment.Spec.Replicas == nil {
+					continue
+				}
 				numOfPods = numOfPods + *originalDeployment.Spec.Replicas
 			default:
 				continue
