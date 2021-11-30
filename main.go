@@ -148,6 +148,7 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 		fileTriggerPathLength := len(fileTrigger)
 		lenPath := len(filePath)
 		depFile := filePath[lenPath-fileTriggerPathLength:lenPath]
+		fmt.Println("dep file, file trigger: " + depFile + ", " + fileTrigger)
 		if depFile == fileTrigger {
 			time.Sleep(20)
 		}
