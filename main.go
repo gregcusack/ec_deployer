@@ -143,6 +143,14 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 		if err != nil {
 			fmt.Printf("Error in reading file: %s, Error: %s\n", filePath, err)
 		}
+		// This is app specific tbh
+		fileTrigger := "quickstart-ts-deployment-part2.yml"
+		fileTriggerPathLength := len(fileTrigger)
+		lenPath := len(filePath)
+		depFile := filePath[lenPath-fileTriggerPathLength:lenPath]
+		if depFile == fileTrigger {
+			time.Sleep(20)
+		}
 		// There can be multiple yaml definitions per file
 		docs := strings.Split(string(yamlFile), "\n---")
 		res := []byte{}
