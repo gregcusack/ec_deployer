@@ -150,7 +150,8 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 		depFile := filePath[lenPath-fileTriggerPathLength:lenPath]
 		fmt.Println("dep file, file trigger: " + depFile + ", " + fileTrigger)
 		if depFile == fileTrigger {
-			time.Sleep(20)
+			fmt.Println("file trigger set! sleeping for 20s")
+			time.Sleep(20 * time.Second)
 		}
 		// There can be multiple yaml definitions per file
 		docs := strings.Split(string(yamlFile), "\n---")
