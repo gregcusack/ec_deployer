@@ -149,9 +149,11 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 		lenPath := len(filePath)
 		depFile := filePath[lenPath-fileTriggerPathLength:lenPath]
 		fmt.Println("dep file, file trigger: " + depFile + ", " + fileTrigger)
+		deployDelayTrigger := 0
 		if depFile == fileTrigger {
 			fmt.Println("file trigger set! sleeping for 20s")
-			time.Sleep(60 * time.Second)
+			time.Sleep(1 * time.Second)
+			deployDelayTrigger = 1
 		}
 		// There can be multiple yaml definitions per file
 		docs := strings.Split(string(yamlFile), "\n---")
@@ -168,6 +170,8 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 				fmt.Println(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
 				continue
 			}
+			sleepMultiplier := time.Duration(3 * deployDelayTrigger)
+			time.Sleep(sleepMultiplier * time.Second)
 			
 			switch groupVersionKind.Kind {
 			case "Deployment":
