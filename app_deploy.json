@@ -3,8 +3,8 @@
     {
         "name": "app1",
         "specs": {
-              "mem": 40000,
-              "cpu": 40000
+              "mem": 20000,
+              "cpu": 20000
         },
         "gcmIP": "192.168.6.10",
 	"agentIPs": [
@@ -12,8 +12,8 @@
 		"192.168.6.8",
 		"192.168.6.9"
 	],
-        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/DeathStarBench/mediaMicroservices/k8s-yaml-1/",
-	    "namespace": "media-microsvc-1"
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/DeathStarBench/mediaMicroservices/k8s-yaml/",
+	    "namespace": "media-microsvc"
     }
   ]
 }

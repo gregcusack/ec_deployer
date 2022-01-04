@@ -187,7 +187,7 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 					contMem := strconv.Itoa(int(memToAlloc/int64(totalPods)))+ "Mi"
 					fmt.Printf("Container limits: %s, %s \n", contCpu, contMem)
 					// First argument is the "requests" and the 2nd argument is "limits"
-					resReq := getResourceRequirements(getResourceList(contCpu, contMem), getResourceList(contCpu, contMem))
+					resReq := getResourceRequirements(getResourceList("100m", "25Mi"), getResourceList(contCpu, contMem))
 					// resource: https://github.com/kubernetes/kubernetes/blob/master/pkg/controller/resourcequota/resource_quota_controller_test.go
 					originalDeployment.Spec.Template.Spec.Containers[i].Resources = resReq
 					
