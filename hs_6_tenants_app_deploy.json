@@ -1,0 +1,95 @@
+{
+  "DC-def": [
+    {
+        "name": "app1",
+        "specs": {
+              "mem": 33000,
+              "cpu": 33000
+        },
+        "gcmIP": "192.168.6.10",
+	"agentIPs": [
+		"192.168.6.7",
+		"192.168.6.8",
+		"192.168.6.9"
+	],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests-1/",
+	    "namespace": "hipster-shop-1"
+    },
+    {
+        "name": "app2",
+        "specs": {
+              "mem": 33000,
+              "cpu": 33000
+        },
+        "gcmIP": "192.168.6.10",
+	"agentIPs": [
+		"192.168.6.7",
+		"192.168.6.8",
+		"192.168.6.9"
+	],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests-2/",
+	    "namespace": "hipster-shop-2"
+    },
+    {
+        "name": "app3",
+        "specs": {
+              "mem": 33000,
+              "cpu": 33000
+        },
+        "gcmIP": "192.168.6.10",
+	"agentIPs": [
+		"192.168.6.7",
+		"192.168.6.8",
+		"192.168.6.9"
+	],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests-3/",
+	    "namespace": "hipster-shop-3"
+    },
+    {
+        "name": "app4",
+        "specs": {
+              "mem": 33000,
+              "cpu": 33000
+        },
+        "gcmIP": "192.168.6.10",
+	"agentIPs": [
+		"192.168.6.7",
+		"192.168.6.8",
+		"192.168.6.9"
+	],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests-4/",
+	    "namespace": "hipster-shop-4"
+    },
+    {
+        "name": "app5",
+        "specs": {
+              "mem": 33000,
+              "cpu": 33000
+        },
+        "gcmIP": "192.168.6.10",
+	"agentIPs": [
+		"192.168.6.7",
+		"192.168.6.8",
+		"192.168.6.9"
+	],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests-5/",
+	    "namespace": "hipster-shop-5"
+    },
+    {
+        "name": "app6",
+        "specs": {
+              "mem": 33000,
+              "cpu": 33000
+        },
+        "gcmIP": "192.168.6.10",
+	"agentIPs": [
+		"192.168.6.7",
+		"192.168.6.8",
+		"192.168.6.9"
+	],
+        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests-6/",
+	    "namespace": "hipster-shop-6"
+    }
+  ]
+}
+
