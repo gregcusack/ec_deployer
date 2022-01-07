@@ -3,8 +3,8 @@
     {
         "name": "app1",
         "specs": {
-              "mem": 99000,
-              "cpu": 99000
+              "mem": 814,
+              "cpu": 10727
         },
         "gcmIP": "192.168.6.10",
 	"agentIPs": [
