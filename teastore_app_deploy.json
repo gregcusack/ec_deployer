@@ -12,8 +12,8 @@
 		"192.168.6.3",
 		"192.168.6.4"
 	],
-        "deploymentPath" : "/mydata/ec/Distributed-Containers/third_party/DeathStarBench/mediaMicroservices/k8s-yaml/",
-	    "namespace": "media-microsvc"
+        "deploymentPath" : "/mydata/ec/Distributed-Containers/third_party/apps/TeaStore/examples/kubernetes/dep/",
+	    "namespace": "teastore"
     }
   ]
 }

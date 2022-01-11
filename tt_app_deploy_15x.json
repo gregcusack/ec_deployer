@@ -1,0 +1,20 @@
+{
+  "DC-def": [
+    {
+        "name": "app1",
+        "specs": {
+              "mem": 39250,
+              "cpu": 156579
+        },
+        "gcmIP": "192.168.6.1",
+	"agentIPs": [
+		"192.168.6.2",
+		"192.168.6.3",
+		"192.168.6.4"
+	],
+        "deploymentPath" : "/mydata/ec/Distributed-Containers/third_party/apps/train-ticket/deployment/kubernetes-manifests/quickstart-k8s/",
+	    "namespace": "train-ticket"
+    }
+  ]
+}
+

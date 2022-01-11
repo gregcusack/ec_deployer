@@ -3,16 +3,16 @@
     {
         "name": "app1",
         "specs": {
-              "mem": 648,
-              "cpu": 8346
+              "mem": 742,
+              "cpu": 8674
         },
-        "gcmIP": "192.168.6.10",
+        "gcmIP": "192.168.6.1",
 	"agentIPs": [
-		"192.168.6.7",
-		"192.168.6.8",
-		"192.168.6.9"
+		"192.168.6.2",
+		"192.168.6.3",
+		"192.168.6.4"
 	],
-        "deploymentPath" : "/mnt/ECKernel/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests/",
+        "deploymentPath" : "/mydata/ec/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests/",
 	    "namespace": "hipster-shop"
     }
   ]
