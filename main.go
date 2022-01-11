@@ -185,9 +185,13 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 					// fmt.Printf("Container Name: %s\n", originalDeployment.Spec.Template.Spec.Containers[i].Name)
 					contCpu := strconv.Itoa(int(cpuLimit/totalPods))+ "m"
 					contMem := strconv.Itoa(int(memToAlloc/int64(totalPods)))+ "Mi"
+
+					//for train ticket, we need burstable pods. or else it won't fit on 3 nodes
+					cpuReq := strconv.Itoa(int(float64(cpuLimit/totalPods) * 0.65)) + "m"
+
 					fmt.Printf("Container limits: %s, %s \n", contCpu, contMem)
 					// First argument is the "requests" and the 2nd argument is "limits"
-					resReq := getResourceRequirements(getResourceList(contCpu, contMem), getResourceList(contCpu, contMem))
+					resReq := getResourceRequirements(getResourceList(cpuReq, contMem), getResourceList(contCpu, contMem))
 					// resource: https://github.com/kubernetes/kubernetes/blob/master/pkg/controller/resourcequota/resource_quota_controller_test.go
 					originalDeployment.Spec.Template.Spec.Containers[i].Resources = resReq
 					
