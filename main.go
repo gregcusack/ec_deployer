@@ -187,7 +187,7 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 					contMem := strconv.Itoa(int(memToAlloc/int64(totalPods)))+ "Mi"
 
 					//for train ticket, we need burstable pods. or else it won't fit on 3 nodes
-					cpuReq := strconv.Itoa(int(float64(cpuLimit/totalPods) * 0.65)) + "m"
+					cpuReq := strconv.Itoa(int(float64(cpuLimit/totalPods) * 0.7)) + "m"
 
 					fmt.Printf("Container limits: %s, %s \n", contCpu, contMem)
 					// First argument is the "requests" and the 2nd argument is "limits"
