@@ -40,31 +40,9 @@ const GCM_GRPC_PORT = ":4447"
 var BaseGcmGrpcPort = 4447 //app1 gets 4447, app2 gets 4448, ..., appN gets 4447 + appN - 1
 const BUFFSIZE = 2048
 
+//keeps track of the number of applications being deployed
+//Only relevant for multitenancy
 var nsToAppNumMap = make(map[string]int32)
-
-//type nsToAppNumMap struct {
-//	sync.RWMutex
-//	internal map[string]int
-//}
-//
-//func (nsMap *nsToAppNumMap) Read(key string) (int, bool) {
-//	nsMap.RLock()
-//	result, ok := nsMap.internal[key]
-//	nsMap.RUnlock()
-//	return result, ok
-//}
-//
-//func (nsMap *nsToAppNumMap) Insert(key string, value int) {
-//	nsMap.Lock()
-//	nsMap.internal[key] = value
-//	nsMap.Unlock()
-//}
-//
-//func (nsMap *nsToAppNumMap) Delete(key string) {
-//	nsMap.Lock()
-//	delete(nsMap.internal, key)
-//	nsMap.Unlock()
-//}
 
 type podNameToDockerIdMap struct {
 	sync.RWMutex
@@ -96,7 +74,7 @@ type Controller struct {
 	informer cache.Controller
 }
 
-var m *podNameToDockerIdMap
+var podNameToDockMap *podNameToDockerIdMap
 //var nsMap *nsToAppNumMap
 
 func NewController(queue workqueue.RateLimitingInterface, indexer cache.Indexer, informer cache.Controller) *Controller {
@@ -206,7 +184,7 @@ func (c *Controller) runWorker() {
 }
 
 func initPodToDockerMap() {
-	m = &podNameToDockerIdMap{internal: map[string]string{}}
+	podNameToDockMap = &podNameToDockerIdMap{internal: map[string]string{}}
 }
 
 //func initNamespacetoAppNumMap() {
@@ -260,10 +238,10 @@ func SetupWatcher(podListWatcher *cache.ListWatch, queue workqueue.RateLimitingI
 			wg.Wait()
 			if podOld.DeletionTimestamp != nil || string(podNew.Status.Phase) == "Failed" {
 				fmt.Println("Old Pod is terminating! name: " + podOld.GetName())
-				if dockerId, ok := m.Read(podOld.GetName()); ok {
+				if dockerId, ok := podNameToDockMap.Read(podOld.GetName()); ok {
 					go exportDeletePod(gcmIP, dockerId)
 					fmt.Println("Deleting Docker id: " + dockerId)
-					m.Delete(podOld.GetName())
+					podNameToDockMap.Delete(podOld.GetName())
 				} else {
 					fmt.Println("Failed to get dockerId from map! (" + podOld.GetName() + ")")
 				}
@@ -305,17 +283,19 @@ func handleNewPod(wg *sync.WaitGroup, podObj *corev1.Pod, ns string, gcmIP strin
 			fmt.Println("handleNewPod NodeIP: " + nodeIP)
 
 			dockerId := GetDockerId(podObj)
-			m.Insert(podObj.GetName(), dockerId)
+			podNameToDockMap.Insert(podObj.GetName(), dockerId)
 
-			appNum, ok := nsToAppNumMap[ns] //get the appNum from the namespace
-			if !ok {
-				fmt.Println("Failed to get App Num from ns! ns: " + ns)
-			}
+			//appNum, ok := nsToAppNumMap[ns] //get the appNum from the namespace
+			//if !ok {
+			//	fmt.Println("Failed to get App Num from ns! ns: " + ns)
+			//}
 
-			cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId, appNum)
-			if cgId != 0 {
-				exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
-			}
+			//TODO: this needs to be called by agent maybe. makes things much more complicated though
+			//cgId, dockerID := connectContainerRequest(nodeIP, gcmIP, podObj.Name, dockerId, appNum)
+			//if cgId != 0 {
+			//	exportDeployPodSpec(nodeIP, gcmIP, dockerID, cgId, appNum)
+			//}
+			//exportDeployPodSpec(nodeIP, gcmIP, dockerId, cgId, appNum)
 			break
 		} else if ctx.Err() != nil {
 			break
@@ -415,5 +395,38 @@ func connectContainerRequest(agentIP, gcmIP, podName, dockerId string, appNum in
 		fmt.Println("ERROR IN SYSCONNECT. Rx back cgroupID: -1")
 	}
 	return r.GetCgroupID(), r.GetDockerID()
+
+}
+
+func SendNamespaceToAgent(gcmIP string, agentIPs []string, namespace string, appCount int32) []int32 {
+	fmt.Println("sendNamespaceToAgent()")
+	var returnStatuses []int32
+
+	for _, agent_ip := range agentIPs {
+		conn, err := grpc.Dial(agent_ip + AGENT_GRPC_PORT, grpc.WithInsecure(), grpc.WithBlock())
+		c := pb.NewHandlerClient(conn)
+
+		txMsg := &pb.TriggerPodDeploymentWatcherRequest{
+			GcmIP:     	gcmIP,
+			AgentIP:	agent_ip,
+			Namespace: 	namespace,
+			AppCount:  	appCount,
+		}
+		fmt.Println("txMsg to agent -> gcmIP: " + txMsg.GcmIP + ", namespace: " + txMsg.Namespace + ", appCount: " + strconv.Itoa(int(txMsg.AppCount)))
+
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancel()
+		r, err := c.ReqTriggerAgentWatcher(ctx, txMsg)
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		log.Println("Rx back: ", r.GetReturnStatus())
+		if r.GetReturnStatus() != 0 {
+			fmt.Println("ERROR IN TriggerAgentWatcher for app: " + strconv.Itoa(int(appCount)) + ". Rx back returnStatus: " + string(r.GetReturnStatus()))
+		}
+		returnStatuses = append(returnStatuses, r.GetReturnStatus())
+	}
+	return returnStatuses
+
 
 }

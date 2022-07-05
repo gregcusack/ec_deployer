@@ -1,0 +1,20 @@
+{
+  "DC-def": [
+    {
+        "name": "app1",
+        "specs": {
+              "mem": 943,
+              "cpu": 11195
+        },
+        "gcmIP": "192.168.6.1",
+	"agentIPs": [
+		"192.168.6.2",
+		"192.168.6.3",
+		"192.168.6.4"
+	],
+        "deploymentPath" : "/mydata/ec/Distributed-Containers/third_party/apps/microservices-demo/kubernetes-manifests/",
+	    "namespace": "hipster-shop"
+    }
+  ]
+}
+

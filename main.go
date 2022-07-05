@@ -96,7 +96,8 @@ func main() {
 		stop := make(chan struct{})
 		defer close(stop)
 		go controller.Run(1, stop, namespace, appCount)
-		
+		go podWatcher.SendNamespaceToAgent(gcmIP, agentIPs, namespace, appCount)
+
 		// Deploy the Application nominally - as it would be via `kubectl apply -f` and get the container names of all pods in the application
 		fmt.Printf("[DBG] Deploying Application: " + appName)
 		err := deployer(appName, gcmIP, deploymentPath, namespace, cpuLimit, memLimit, clientset, appCount)
@@ -142,6 +143,18 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 		if err != nil {
 			fmt.Printf("Error in reading file: %s, Error: %s\n", filePath, err)
 		}
+		// This is app specific tbh
+		fileTrigger := "quickstart-ts-deployment-part2.yml"
+		fileTriggerPathLength := len(fileTrigger)
+		lenPath := len(filePath)
+		depFile := filePath[lenPath-fileTriggerPathLength:lenPath]
+		fmt.Println("dep file, file trigger: " + depFile + ", " + fileTrigger)
+		deployDelayTrigger := 0
+		if depFile == fileTrigger {
+			fmt.Println("file trigger set! sleeping for 20s")
+			time.Sleep(1 * time.Second)
+			deployDelayTrigger = 1
+		}
 		// There can be multiple yaml definitions per file
 		docs := strings.Split(string(yamlFile), "\n---")
 		res := []byte{}
@@ -157,6 +170,8 @@ func deployer(appName string, gcmIP string, deploymentPath string, namespace str
 				fmt.Println(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
 				continue
 			}
+			sleepMultiplier := time.Duration(3 * deployDelayTrigger)
+			time.Sleep(sleepMultiplier * time.Second)
 			
 			switch groupVersionKind.Kind {
 			case "Deployment":
@@ -257,6 +272,7 @@ func getNumPods(deploymentPath string, namespace string, files []os.FileInfo, cl
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	for _, item := range files {
 		filePath := fmt.Sprintf("%v", deploymentPath) + item.Name()
+		fmt.Println("file path: " + filePath)
 		yamlFile, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			fmt.Printf("Error in reading file: %s, Error: %s\n", filePath, err)
@@ -279,6 +295,10 @@ func getNumPods(deploymentPath string, namespace string, files []os.FileInfo, cl
 			switch groupVersionKind.Kind {
 			case "Deployment":
 				originalDeployment := obj.(*appsv1.Deployment)
+				if originalDeployment.Spec.Replicas == nil {
+					numOfPods += 1
+					continue
+				}
 				numOfPods = numOfPods + *originalDeployment.Spec.Replicas
 			default:
 				continue
